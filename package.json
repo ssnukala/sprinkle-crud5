@@ -1,0 +1,39 @@
+{
+  "name": "@ssnukala/sprinkle-crud5",
+  "version": "5.0.0",
+  "description": "CRUD Sprinkle for UserFrosting 5",
+  "funding": "https://opencollective.com/userfrosting",
+  "main": "app/assets/main.js",
+  "license": "MIT",
+  "author": "Srinivas Nukala (https://srinivasnukala.com/)",
+  "contributors": [
+    "Srinivas Nukala (https://srinivasnukala.com/)"
+  ],
+  "keywords": [
+    "UserFrosting",
+    "CRUD Operations",
+    "Sprinkle"
+  ],
+  "homepage": "https://github.com/ssnukala/sprinkle-crud5#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ssnukala/sprinkle-crud5.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ssnukala/issues"
+  },
+  "dependencies": {
+    "@userfrosting/theme-adminlte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@symfony/webpack-encore": "^4.4.0",
+    "sass": "^1.51.0",
+    "webpack-notifier": "^1.14.1"
+  },
+  "scripts": {
+    "dev-server": "encore dev-server",
+    "dev": "encore dev",
+    "watch": "encore dev --watch",
+    "build": "encore production --progress"
+  }
+}
