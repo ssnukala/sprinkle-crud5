@@ -24,7 +24,7 @@ use UserFrosting\Sprinkle\Core\Bakery\Event\BakeCommandEvent;
  * Bake command.
  * Umbrella command used to run multiple sub-commands at once.
  */
-final class BakeCommand extends Command
+final class CRUD5Command extends Command
 {
     use WithSymfonyStyle;
 
@@ -62,7 +62,7 @@ final class BakeCommand extends Command
     {
         $list = implode(', ', $this->aggregateCommands());
 
-        $this->setName('bake')
+        $this->setName('crud5')
             ->setDescription('UserFrosting installation command')
             ->setHelp('This command combine the following commands : ' . $list);
     }
