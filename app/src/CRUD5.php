@@ -8,7 +8,7 @@
  * @license   https://github.com/userfrosting/sprinkle-admin/blob/master/LICENSE.md (MIT License)
  */
 
-namespace UserFrosting\Sprinkle\Admin;
+namespace UserFrosting\Sprinkle\CRUD5;
 
 use UserFrosting\Event\EventListenerRecipe;
 use UserFrosting\Sprinkle\Account\Account;
