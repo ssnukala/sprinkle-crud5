@@ -28,7 +28,7 @@ class DashboardRoutes implements RouteDefinitionInterface
 {
     public function register(App $app): void
     {
-        $app->get('/crud5/dashboard', DashboardAction::class)
+        $app->get('/dashboard/crud5', DashboardAction::class)
             ->setName('dashboard')
             ->add(AuthGuard::class)->add(NoCache::class);
 
