@@ -20,6 +20,8 @@ use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
 use UserFrosting\Sprinkle\Core\I18n\SiteLocaleInterface;
+use UserFrosting\Sprinkle\Core\Log\DebugLogger;
+use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 
 /**
  * Renders a page displaying a group's information, in read-only mode.
@@ -41,6 +43,7 @@ class BasePageAction
      */
     public function __construct(
         protected Authenticator $authenticator,
+        protected DebugLogger $logger,
         protected SiteLocaleInterface $siteLocale,
         protected RouteParserInterface $routeParser,
         protected Twig $view,
@@ -54,12 +57,14 @@ class BasePageAction
      * @param GroupInterface $group    The group to display, injected by the middleware.
      * @param Response       $response
      */
-    public function __invoke(GroupInterface $group, Response $response): Response
+    public function __invoke(CRUD5ModelInterface $crud5, string $crmodel, Request $request, Response $response): Response
     {
-        $payload = $this->handle($group);
-
+        $this->logger->debug("Line 60:BasePageAction  Slug is $crmodel");
+        $crud5->setTable($crmodel);
+        $payload = $this->handle($crud5);
         return $this->view->render($response, $this->template, $payload);
     }
+
 
     /**
      * Handle the request and return the payload.
@@ -68,11 +73,11 @@ class BasePageAction
      *
      * @return mixed[]
      */
-    protected function handle(GroupInterface $group): array
+    protected function handle(CRUD5ModelInterface $crud5): array
     {
         // Access-controlled page
         if (!$this->authenticator->checkAccess('uri_group', [
-            'group' => $group,
+            'group' => $crud5,
         ])) {
             throw new ForbiddenException();
         }
@@ -88,7 +93,7 @@ class BasePageAction
         // Determine which fields should be hidden
         foreach ($fieldNames as $field) {
             if (!$this->authenticator->checkAccess('view_group_field', [
-                'group'    => $group,
+                'group'    => $crud5,
                 'property' => $field,
             ])) {
                 $fields['hidden'][] = $field;
@@ -101,20 +106,20 @@ class BasePageAction
         ];
 
         if (!$this->authenticator->checkAccess('update_group_field', [
-            'group'  => $group,
+            'group'  => $crud5,
             'fields' => ['name', 'slug', 'icon', 'description'],
         ])) {
             $editButtons['hidden'][] = 'edit';
         }
 
         if (!$this->authenticator->checkAccess('delete_group', [
-            'group' => $group,
+            'group' => $crud5,
         ])) {
             $editButtons['hidden'][] = 'delete';
         }
 
         return [
-            'group'           => $group,
+            'group'           => $crud5,
             'fields'          => $fields,
             'tools'           => $editButtons,
             'delete_redirect' => $this->routeParser->urlFor('uri_groups'),

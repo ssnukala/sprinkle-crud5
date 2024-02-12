@@ -36,11 +36,11 @@ class CRUD5Routes implements RouteDefinitionInterface
 {
       public function register(App $app): void
       {
-            $app->group('/crud5/{slug}', function (RouteCollectorProxy $group) {
-                  $group->get('', BasePageAction::class)
+            $app->group('/crud5/{crmodel}', function (RouteCollectorProxy $crud5) {
+                  $crud5->get('', BasePageAction::class)
                         ->add(CRUD5Injector::class)
                         ->setName('crud5-model');
-                  $group->get('/r/{recid}', BasePageAction::class)
+                  $crud5->get('/r/{recid}', BasePageAction::class)
                         ->add(CRUD5Injector::class)
                         ->setName('crud5.record');
             })->add(AuthGuard::class)->add(NoCache::class);

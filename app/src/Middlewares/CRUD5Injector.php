@@ -15,6 +15,7 @@ namespace UserFrosting\Sprinkle\CRUD5\Middlewares;
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 use UserFrosting\Sprinkle\CRUD5\Exceptions\RecordNotFoundException;
 use UserFrosting\Sprinkle\Core\Middlewares\Injector\AbstractInjector;
+use UserFrosting\Sprinkle\Core\Log\DebugLogger;
 
 /**
  * Route middleware to inject group when it's slug is passed via placeholder in the URL or request query.
@@ -22,7 +23,7 @@ use UserFrosting\Sprinkle\Core\Middlewares\Injector\AbstractInjector;
 class CRUD5Injector extends AbstractInjector
 {
     // Route placeholder
-    protected string $placeholder = 'id';
+    protected string $placeholder = 'crmodel';
 
     // Middleware attribute name.
     protected string $attribute = 'CRUD5Model';
@@ -32,20 +33,22 @@ class CRUD5Injector extends AbstractInjector
      */
     public function __construct(
         protected CRUD5ModelInterface $model,
+        protected DebugLogger $logger,
     ) {
     }
 
     /**
      * Returns the group's instance.
      *
-     * @param string|null $slug
+     * @param string|null $cr5model
      *
      * @return CRUD5ModelInterface
      */
-    protected function getInstance(?string $slug): CRUD5ModelInterface
+    protected function getInstance(?string $crmodel): CRUD5ModelInterface
     {
-        $this->model->setTable($slug);
-        if ($slug === null || ($records = $this->model->where('slug', $slug)->first()) === null) {
+        $this->logger->debug("Line 47: $crmodel is " . $this->model->getModel());
+        $this->model->setTable($crmodel);
+        if (($records = $this->model->first()) === null) {
             throw new RecordNotFoundException();
         }
 
