@@ -22,7 +22,7 @@ use UserFrosting\Sprinkle\CRUD5\Database\Models\CRUD5Model;
  * Note both class are map using class-string, since Models are not instantiated
  * by the container in the Eloquent world.
  */
-class ModelsService implements ServicesProviderInterface
+class CRUD5ModelsService implements ServicesProviderInterface
 {
     public function register(): array
     {
