@@ -19,6 +19,7 @@ use UserFrosting\Sprinkle\Admin\Listener\UserRedirectedToDashboard;
 use UserFrosting\Sprinkle\SprinkleRecipe;
 use UserFrosting\Sprinkle\CRUD5\Routes\CRUD5Routes;
 use UserFrosting\Sprinkle\CRUD5\Routes\DashboardRoutes;
+use UserFrosting\Sprinkle\CRUD5\ServicesProvider\CRUD5ModelsService;
 
 use UserFrosting\Theme\AdminLTE\AdminLTE;
 
@@ -70,7 +71,9 @@ class CRUD5 implements
      */
     public function getServices(): array
     {
-        return [];
+        return [
+            CRUD5ModelsService::class,
+        ];
     }
 
     /**

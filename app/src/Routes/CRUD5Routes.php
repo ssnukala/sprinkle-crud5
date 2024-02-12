@@ -38,6 +38,7 @@ class CRUD5Routes implements RouteDefinitionInterface
       {
             $app->group('/crud5/{slug}', function (RouteCollectorProxy $group) {
                   $group->get('', BasePageAction::class)
+                        ->add(CRUD5Injector::class)
                         ->setName('crud5-model');
                   $group->get('/r/{recid}', BasePageAction::class)
                         ->add(CRUD5Injector::class)
