@@ -44,7 +44,8 @@ class CRUD5Injector extends AbstractInjector
      */
     protected function getInstance(?string $slug): CRUD5ModelInterface
     {
-        if (($records = $this->model->first()) === null) {
+        $this->model->setTable($slug);
+        if ($slug === null || ($records = $this->model->where('slug', $slug)->first()) === null) {
             throw new RecordNotFoundException();
         }
 
