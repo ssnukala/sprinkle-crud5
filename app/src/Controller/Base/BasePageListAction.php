@@ -18,10 +18,11 @@ use Slim\Views\Twig;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\Account\Authorize\AuthorizationManager;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
-use UserFrosting\Sprinkle\Admin\Sprunje\GroupSprunje;
+use UserFrosting\Sprinkle\CRUD5\Sprunje\CRUD5Sprunje;
+use UserFrosting\Sprinkle\Core\Log\DebugLogger;
 
 /**
- * Renders the group listing page.
+ * Renders the CRUD Table listing page.
  *
  * This page renders a table of groups, with dropdown menus for admin actions for each group.
  * Actions typically include: edit group, delete group.
@@ -29,10 +30,10 @@ use UserFrosting\Sprinkle\Admin\Sprunje\GroupSprunje;
  *
  * Request type: GET
  */
-class BasePageListPageAction
+class BasePageListAction
 {
     /** @var string Page template */
-    protected string $template = 'pages/groups.html.twig';
+    protected string $template = 'pages/crudlist.html.twig';
 
     /**
      * Inject dependencies.
@@ -40,7 +41,8 @@ class BasePageListPageAction
     public function __construct(
         protected AuthorizationManager $authorizer,
         protected Authenticator $authenticator,
-        protected GroupSprunje $sprunje,
+        protected DebugLogger $logger,
+        protected CRUD5Sprunje $sprunje,
         protected Twig $view,
     ) {
     }
@@ -52,11 +54,12 @@ class BasePageListPageAction
      * @param Request  $request
      * @param Response $response
      */
-    public function __invoke(Request $request, Response $response): Response
+    public function __invoke(string $crmodel, Request $request, Response $response): Response
     {
+        $this->logger->debug("Line 57:BasePageListAction  Slug is $crmodel");
         $this->validateAccess();
-
-        return $this->view->render($response, $this->template);
+        $payload = ['cr5model' => $crmodel];
+        return $this->view->render($response, $this->template, $payload);
     }
 
     /**

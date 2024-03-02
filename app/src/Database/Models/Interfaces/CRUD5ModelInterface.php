@@ -16,6 +16,7 @@ use DateTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use UserFrosting\Sprinkle\Core\Database\Models\Model;
 
 /**

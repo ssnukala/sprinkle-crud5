@@ -46,8 +46,9 @@ class CRUD5Injector extends AbstractInjector
      */
     protected function getInstance(?string $crmodel): CRUD5ModelInterface
     {
-        $this->logger->debug("Line 47: $crmodel is " . $this->model->getModel());
+        //$this->logger->debug("Line 47: $crmodel is " . $this->model->getTable());
         $this->model->setTable($crmodel);
+        //$this->logger->debug("Line 51 after setting: $crmodel is " . $this->model->getTable());
         if (($records = $this->model->first()) === null) {
             throw new RecordNotFoundException();
         }

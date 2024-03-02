@@ -17,6 +17,7 @@ use Slim\Routing\RouteCollectorProxy;
 use UserFrosting\Routes\RouteDefinitionInterface;
 use UserFrosting\Sprinkle\Account\Authenticate\AuthGuard;
 use UserFrosting\Sprinkle\CRUD5\Controller\Base\BasePageAction;
+use UserFrosting\Sprinkle\CRUD5\Controller\Base\BasePageListAction;
 use UserFrosting\Sprinkle\CRUD5\Controller\Base\BaseDeleteAction;
 use UserFrosting\Sprinkle\CRUD5\Controller\Base\BaseCreateAction;
 use UserFrosting\Sprinkle\CRUD5\Controller\Base\BaseEditAction;
@@ -37,7 +38,7 @@ class CRUD5Routes implements RouteDefinitionInterface
       public function register(App $app): void
       {
             $app->group('/crud5/{crmodel}', function (RouteCollectorProxy $crud5) {
-                  $crud5->get('', BasePageAction::class)
+                  $crud5->get('', BasePageListAction::class)
                         ->add(CRUD5Injector::class)
                         ->setName('crud5-model');
                   $crud5->get('/r/{recid}', BasePageAction::class)
@@ -45,8 +46,9 @@ class CRUD5Routes implements RouteDefinitionInterface
                         ->setName('crud5.record');
             })->add(AuthGuard::class)->add(NoCache::class);
 
-            $app->group('/api/crud5/{slug}', function (RouteCollectorProxy $group) {
-                  $group->get('', [BasePageAction::class, 'sprunje'])
+            $app->group('/api/crud5/{crmodel}', function (RouteCollectorProxy $group) {
+                  $group->get('', [BasePageListAction::class, 'sprunje'])
+                        ->add(CRUD5Injector::class)
                         ->setName('api_crud5');
                   $group->delete('/r/{id}', BaseDeleteAction::class)
                         ->add(CRUD5Injector::class)

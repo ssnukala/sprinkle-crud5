@@ -23,7 +23,7 @@ class CRUD5Sprunje extends Sprunje
 {
     protected string $name = 'TO_BE_SET';
 
-    protected array $sortable = [];
+    protected array $sortable = ["name"];
 
     protected array $filterable = [];
 

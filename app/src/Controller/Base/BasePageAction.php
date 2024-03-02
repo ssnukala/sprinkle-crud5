@@ -60,7 +60,6 @@ class BasePageAction
     public function __invoke(CRUD5ModelInterface $crud5, string $crmodel, Request $request, Response $response): Response
     {
         $this->logger->debug("Line 60:BasePageAction  Slug is $crmodel");
-        $crud5->setTable($crmodel);
         $payload = $this->handle($crud5);
         return $this->view->render($response, $this->template, $payload);
     }

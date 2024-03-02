@@ -41,9 +41,18 @@
     <!-- Include validation rules -->
     <script>
     {% include "pages/partials/page.js.twig" %}
+
+    page = $.extend(
+        true, // deep extend
+        {
+            "cr5model": "{{cr5model}}"
+        },
+        page
+    );
+
     </script>    
 
     <!-- Include page-specific JS -->
-    {{ encore_entry_script_tags('page.groups') }}
+    {{ encore_entry_script_tags('page.crudlist') }}
 
 {% endblock %}
