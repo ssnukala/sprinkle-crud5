@@ -6,19 +6,20 @@
  *
  * Target page: /groups
  */
-//import { bindGroupCreationButton, bindGroupButtons } from "../widgets/groups";
+import { bindCrud5CreationButton, bindGroupButtons } from "../widgets/crudlist";
+import { bindCrud5Buttons } from "../widgets/crudlist";
 
 $(document).ready(function () {
-  $("#widget-groups").ufTable({
+  $("#widget-" + page.cr5model).ufTable({
     dataUrl: site.uri.public + "/api/crud5/" + page.cr5model,
     useLoadingTransition: site.uf_table.use_loading_transition,
   });
 
   // Bind creation button
-  bindGroupCreationButton($("#widget-groups"));
+  bindCrud5CreationButton($("#widget-" + page.cr5model));
 
   // Bind table buttons
-  $("#widget-groups").on("pagerComplete.ufTable", function () {
-    bindGroupButtons($(this));
+  $("#widget-" + page.cr5model).on("pagerComplete.ufTable", function () {
+    bindCrud5Buttons($(this));
   });
 });

@@ -7,17 +7,26 @@
 
 {% extends "tables/table-paginated.html.twig" %}
 
+{% set table = {
+        'columns': [
+            {'name': 'name', 'title': 'Name', 'template': 'info'},
+            {'name': 'description', 'title': 'Description', 'template': 'text'},
+            {'name': 'actions', 'title': 'Actions', 'template': 'actions'}
+        ]
+    } | merge(table)
+%}
+
 {% block table %}
     <table id="{{table.id}}" class="tablesorter table table-bordered table-hover table-striped" data-sortlist="{{table.sortlist}}">
         <thead>
             <tr>
-            {{#each table.columns}}
-                <th class="sorter-metatext" data-column-name="{{this.name}}" 
-                {{#if (!Handlebars.Utils.isEmpty(row.template)) }}
-                    data-column-template="#crudlist-table-column-{{this.name}}";
-                {{/if }}
-                    data-priority="{{@index}}">{{this.title}}<i class="fas fa-sort"></i></th>
-            {{/each}}
+            {% for column in table.columns %}
+                <th class="sorter-metatext" data-column-name="{{column.name}}" 
+                {% if column.template is not empty %}
+                    data-column-template="#crudlist-table-column-{{column.template}}" 
+                {% endif %}
+                     data-priority="{{loop.index}}">{{column.title}}<i class="fas fa-sort"></i></th>
+            {% endfor %}
             </tr>
         </thead>
         <tbody>
