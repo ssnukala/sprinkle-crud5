@@ -1,21 +1,21 @@
 {% extends "pages/abstract/dashboard.html.twig" %}
 
 {% block stylesheets_page %}
-    <!-- crudlist.html.twig Page-specific CSS asset bundle -->
+    <!-- Page-specific CSS asset bundle -->
     {{ encore_entry_link_tags('page.groups') }}
 {% endblock %}
 
 {# Overrides blocks in head of base template #}
-{% block page_title %}{{ translate("GROUP", 2) }}{% endblock %}
+{% block page_title %}{{ translate("CRUD", 2) }}{% endblock %}
 
-{% block page_description %}{{ translate("GROUP.PAGE_DESCRIPTION") }}{% endblock %}
+{% block page_description %}{{ translate("CRUD.PAGE_DESCRIPTION") }}{% endblock %}
 
 {% block body_matter %}
     <div class="row">
         <div class="col-md-12">
             <div id="widget-groups" class="box box-primary">
                 <div class="box-header">
-                    <h3 class="box-title"><i class="fas fa-fw fa-users"></i> {{translate('GROUP', 2)}}</h3>
+                    <h3 class="box-title"><i class="fas fa-fw fa-users"></i> {{translate('CRUD', 2)}}</h3>
                     {% include "tables/table-tool-menu.html.twig" %}
                 </div>
                 <div class="box-body">
@@ -29,7 +29,7 @@
                 {% if checkAccess('create_group') %}
                 <div class="box-footer">
                     <button type="button" class="btn btn-success js-group-create">
-                        <i class="fas fa-plus-square"></i>  {{translate("GROUP.CREATE")}}
+                        <i class="fas fa-plus-square"></i>  {{translate("CRUD.CREATE")}}
                     </button>
                 </div>
                 {% endif %}
