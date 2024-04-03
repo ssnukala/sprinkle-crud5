@@ -56,7 +56,7 @@ class BasePageListAction
      */
     public function __invoke(string $crmodel, Request $request, Response $response): Response
     {
-        $this->logger->debug("Line 57:BasePageListAction  Slug is $crmodel");
+        $this->logger->debug("Line 57:BasePageListAction  Slug is $crmodel and rendering template  " . $this->template);
         $this->validateAccess();
         $payload = ['cr5model' => $crmodel];
         return $this->view->render($response, $this->template, $payload);
