@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace UserFrosting\Sprinkle\CRUD5\Listener;
 
 use Psr\EventDispatcher\StoppableEventInterface;
-use Slim\Interfaces\RouteParserInterface;
+use UserFrosting\Sprinkle\Core\Util\RouteParserInterface;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\Core\Event\Contract\RedirectingEventInterface;
 
@@ -25,8 +25,7 @@ class UserRedirectedToDashboard
     public function __construct(
         protected RouteParserInterface $routeParser,
         protected Authenticator $authenticator,
-    ) {
-    }
+    ) {}
 
     /**
      * @param RedirectingEventInterface&StoppableEventInterface $event

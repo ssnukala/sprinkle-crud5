@@ -18,11 +18,11 @@ use Slim\Views\Twig;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\Account\Authorize\AuthorizationManager;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
-use UserFrosting\Sprinkle\CRUD5\Sprunje\CRUD5Sprunje;
-use UserFrosting\Sprinkle\Core\Log\DebugLogger;
+use UserFrosting\Sprinkle\Admin\Sprunje\GroupSprunje;
+use Slim\Routing\RouteContext;
 
 /**
- * Renders the CRUD Table listing page.
+ * Renders the group listing page.
  *
  * This page renders a table of groups, with dropdown menus for admin actions for each group.
  * Actions typically include: edit group, delete group.
@@ -33,7 +33,7 @@ use UserFrosting\Sprinkle\Core\Log\DebugLogger;
 class BasePageListAction
 {
     /** @var string Page template */
-    protected string $template = 'pages/crudlist.html.twig';
+    protected string $template = 'pages/groups.html.twig';
 
     /**
      * Inject dependencies.
@@ -41,11 +41,9 @@ class BasePageListAction
     public function __construct(
         protected AuthorizationManager $authorizer,
         protected Authenticator $authenticator,
-        protected DebugLogger $logger,
-        protected CRUD5Sprunje $sprunje,
+        protected GroupSprunje $sprunje,
         protected Twig $view,
-    ) {
-    }
+    ) {}
 
     /**
      * Receive the request, dispatch to the handler, and return the payload to
@@ -54,12 +52,15 @@ class BasePageListAction
      * @param Request  $request
      * @param Response $response
      */
-    public function __invoke(string $crmodel, Request $request, Response $response): Response
+    public function __invoke(Request $request, Response $response): Response
     {
-        $this->logger->debug("Line 57:BasePageListAction  Slug is $crmodel, template: " . $this->template);
         $this->validateAccess();
-        $payload = ['cr5model' => $crmodel];
-        return $this->view->render($response, $this->template, $payload);
+
+        $routeContext = RouteContext::fromRequest($request);
+        $route = $routeContext->getRoute();
+        $slug = $route?->getArgument('crud_slug');
+
+        return $this->view->render($response, $this->template);
     }
 
     /**
