@@ -6,8 +6,7 @@
  *
  * Target page: /groups
  */
-import { bindCrud5CreationButton, bindGroupButtons } from "../widgets/crudlist";
-import { bindCrud5Buttons } from "../widgets/crudlist";
+import { bindCrud5CreationButton, bindCrud5Buttons } from "../widgets/crudlist";
 
 $(document).ready(function () {
   $("#widget-" + page.cr5model).ufTable({

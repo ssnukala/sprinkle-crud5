@@ -2,33 +2,32 @@
 
 {% block stylesheets_page %}
     <!-- Page-specific CSS asset bundle -->
-    {{ encore_entry_link_tags('page.groups') }}
+    {# {{ encore_entry_link_tags('page.groups') }} #}
+    {{ encore_entry_link_tags('page.'~ crud5.model) }}
 {% endblock %}
 
 {# Overrides blocks in head of base template #}
-{% block page_title %}{{ translate("CRUD", 2) }}{% endblock %}
+{% block page_title %}{{ crud5.title }}{% endblock %}
 
-{% block page_description %}{{ translate("CRUD.PAGE_DESCRIPTION") }}{% endblock %}
+{% block page_description %}{{ crud5.description }}{% endblock %}
 
 {% block body_matter %}
     <div class="row">
         <div class="col-md-12">
-            <div id="widget-{{cr5model}}" class="box box-primary">
+            <div id="widget-{{crud5.model}}" class="box box-primary">
                 <div class="box-header">
                     <h3 class="box-title"><i class="fas fa-fw fa-users"></i> {{translate('CRUD', 2)}}</h3>
                     {% include "tables/table-tool-menu.html.twig" %}
                 </div>
                 <div class="box-body">
                     {% include "tables/crudlist.html.twig" with {
-                            "table" : {
-                                "id" : "table-{{cr5model}}"
-                            }
+                            "table" : crud5.table
                         }
                     %}
                 </div>
                 {% if checkAccess('create_group') %}
                 <div class="box-footer">
-                    <button type="button" class="btn btn-success js-{{cr5model}}-create">
+                    <button type="button" class="btn btn-success js-{{crud5.model}}-create">
                         <i class="fas fa-plus-square"></i>  {{translate("CRUD.CREATE")}}
                     </button>
                 </div>
@@ -45,7 +44,7 @@
     page = $.extend(
         true, // deep extend
         {
-            "cr5model": "{{cr5model}}"
+            "cr5model": "{{crud5.model}}"
         },
         page
     );

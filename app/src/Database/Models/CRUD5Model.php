@@ -51,6 +51,14 @@ class CRUD5Model extends Model implements CRUD5ModelInterface
      */
     public $timestamps = true;
 
+
+    public function __construct(
+        $table = 'CRUD5_NOT_SET'
+    ) {
+        $this->table = $table;
+        parent::__construct();
+    }
+
     /**
      * Create a new factory instance for the model.
      *

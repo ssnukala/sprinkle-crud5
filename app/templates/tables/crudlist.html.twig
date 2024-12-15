@@ -7,14 +7,16 @@
 
 {% extends "tables/table-paginated.html.twig" %}
 
+{#}
 {% set table = {
         'columns': [
-            {'name': 'name', 'title': 'Name', 'template': 'info'},
-            {'name': 'description', 'title': 'Description', 'template': 'text'},
-            {'name': 'actions', 'title': 'Actions', 'template': 'actions'}
+            {'name': 'name', 'title': 'Name', 'template': 'info','filter': true},
+            {'name': 'description', 'title': 'Description', 'template': 'text', 'filter': true},
+            {'name': 'actions', 'title': 'Actions', 'template': 'actions','filter': false}
         ]
     } | merge(table)
 %}
+#}
 
 {% block table %}
     <table id="{{table.id}}" class="tablesorter table table-bordered table-hover table-striped" data-sortlist="{{table.sortlist}}">
@@ -25,7 +27,11 @@
                 {% if column.template is not empty %}
                     data-column-template="#crudlist-table-column-{{column.template}}" 
                 {% endif %}
-                     data-priority="{{loop.index}}">{{column.title}}<i class="fas fa-sort"></i></th>
+                     data-priority="{{loop.index}}">{{column.title}}
+                     {% if column.filter %}
+                        <i class="fas fa-sort"></i>
+                    {% endif %}
+                </th>
             {% endfor %}
             </tr>
         </thead>

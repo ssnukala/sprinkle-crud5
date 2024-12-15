@@ -18,8 +18,10 @@ use Slim\Views\Twig;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\Account\Authorize\AuthorizationManager;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
-use UserFrosting\Sprinkle\Admin\Sprunje\GroupSprunje;
+//use UserFrosting\Sprinkle\Admin\Sprunje\GroupSprunje;
+use UserFrosting\Sprinkle\CRUD5\Sprunje\CRUD5Sprunje;
 use Slim\Routing\RouteContext;
+use UserFrosting\Sprinkle\Core\Log\DebugLogger;
 
 /**
  * Renders the group listing page.
@@ -33,17 +35,21 @@ use Slim\Routing\RouteContext;
 class BasePageListAction
 {
     /** @var string Page template */
-    protected string $template = 'pages/groups.html.twig';
+    protected string $template = 'pages/tobeset.html.twig';
 
     /**
      * Inject dependencies.
+     * SN ToDo: Need to replace GroupSprunje with BaseSprunje and then dynanically instantiate the sprunje based on the value in crud_slug.
      */
     public function __construct(
         protected AuthorizationManager $authorizer,
         protected Authenticator $authenticator,
-        protected GroupSprunje $sprunje,
+        protected CRUD5Sprunje $sprunje,
         protected Twig $view,
-    ) {}
+        //protected DebugLogger $logger,
+    ) {
+        error_log("Line 51: BasePageListAction: ");
+    }
 
     /**
      * Receive the request, dispatch to the handler, and return the payload to
@@ -59,8 +65,28 @@ class BasePageListAction
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
         $slug = $route?->getArgument('crud_slug');
+        error_log("Line 66: BasePageListAction: " . $slug);
 
-        return $this->view->render($response, $this->template);
+        //$this->template = 'pages/' . $slug . '.html.twig';
+        $this->template = 'pages/crudlist.html.twig';
+        $page_data = [
+            'crud5' => [
+                'model' =>  $slug,
+                'title' => 'CRUD5 Title',
+                'description' => "CRUD 5 Page Description",
+                'table' => [
+                    "id" => 'table-' . $slug,
+                    "css-class" => 'crud5-table',
+                    'columns' => [
+                        ['name' => 'name', 'title' => 'Name', 'template' => 'info', 'filter' => true],
+                        ['name' => 'description', 'title' => 'Description', 'template' => 'text', 'filter' => true],
+                        ['name' => 'actions', 'title' => 'Actions', 'template' => 'actions', 'filter' => false]
+                    ]
+                ]
+            ],
+        ];
+
+        return $this->view->render($response, $this->template, $page_data);
     }
 
     /**
@@ -73,8 +99,18 @@ class BasePageListAction
     {
         $this->validateAccess();
 
+        $routeContext = RouteContext::fromRequest($request);
+        $route = $routeContext->getRoute();
+        $slug = $route?->getArgument('crud_slug');
+
         // GET parameters and pass to Sprunje
         $params = $request->getQueryParams();
+        $sortable = [
+            'name',
+            'description',
+        ];
+        error_log("Line 110: CRUD5 Sprunje: " . $slug);
+        $this->sprunje->setupSprunje($slug, $sortable, $sortable);
         $this->sprunje->setOptions($params);
 
         // Be careful how you consume this data - it has not been escaped and contains untrusted user-supplied content.

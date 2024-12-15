@@ -62,8 +62,8 @@ class BasePageAction
 
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
-        $slug = $route?->getArgument('slug');
-        $this->template = 'pages/' . $slug . '.html.twig';
+        $slug = $route?->getArgument('crud_slug');
+        //$this->template = 'pages/' . $slug . '.html.twig';
         $this->template = 'pages/base.html.twig';
 
         return $this->view->render($response, $this->template, $payload);
