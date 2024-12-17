@@ -7,27 +7,67 @@
 
 {% extends "tables/table-paginated.html.twig" %}
 
-{#}
-{% set table = {
-        'columns': [
-            {'name': 'name', 'title': 'Name', 'template': 'info','filter': true},
-            {'name': 'description', 'title': 'Description', 'template': 'text', 'filter': true},
-            {'name': 'actions', 'title': 'Actions', 'template': 'actions','filter': false}
-        ]
-    } | merge(table)
-%}
-#}
+{% import _self as crudfield %}
+{% macro addHBTemplate(type,name,model) %}
+    {% if type == 'text' %}
+        {% verbatim %}
+        <script id="crudlist-table-column-{% endverbatim %}{{name}}{% verbatim %}" type="text/x-handlebars-template">
+            <td>
+                {{row.{% endverbatim %}{{name}}{% verbatim %}}}
+            </td>
+        </script>
+        {% endverbatim %}
+    {% elseif type == 'info' %}
+        {% verbatim %}
+        <script id="crudlist-table-column-{% endverbatim %}{{name}}{% verbatim %}" type="text/x-handlebars-template">
+            <td data-text="{{row.{% endverbatim %}{{name}}{% verbatim %} }}">
+                <strong>
+                <a href="{{site.uri.public}}/{% endverbatim %}{{model}}{% verbatim %}/r/{{row.id}}">{{row.{% endverbatim %}{{name}}{% verbatim %}}}</a>
+                </strong>
+            </td>
+        </script>
+        {% endverbatim %}
+    {% elseif type == 'actions' %}
+        {% verbatim %}
+        <script id="crudlist-table-column-actions" type="text/x-handlebars-template">
+            <td>
+                <div class="btn-record">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                        {% endverbatim %}{{translate("ACTIONS")}}{% verbatim %}
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li>
+                            <a href="#" data-id="{{row.id}}" class="js-record-edit">
+                            <i class="fas fa-edit"></i> {% endverbatim %}{{translate("EDIT")}}{% verbatim %}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-id="{{row.id}}" class="js-record-delete">
+                            <i class="fas fa-trash-alt"></i> {% endverbatim %}{{translate("DELETE")}}{% verbatim %}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </script>
+        {% endverbatim %}
+    {% endif %}
+
+{% endmacro %}
 
 {% block table %}
     <table id="{{table.id}}" class="tablesorter table table-bordered table-hover table-striped" data-sortlist="{{table.sortlist}}">
         <thead>
             <tr>
-            {% for column in table.columns %}
-                <th class="sorter-metatext" data-column-name="{{column.name}}" 
+            {% for name, column in table.columns %}
+                <th class="sorter-metatext" data-column-name="{{name}}" 
                 {% if column.template is not empty %}
-                    data-column-template="#crudlist-table-column-{{column.template}}" 
+                    data-column-template="#crudlist-table-column-{{name}}" 
                 {% endif %}
-                     data-priority="{{loop.index}}">{{column.title}}
+                
+                data-filter="{{column.filter|default(false)?'true':'false'}}"
+                     data-priority="{{loop.index}}">{{translate(column.label)}}
                      {% if column.filter %}
                         <i class="fas fa-sort"></i>
                     {% endif %}
@@ -47,42 +87,7 @@
      #
      # These templates require handlebars-helpers.js, moment.js
     #}
-    {% verbatim %}
-    <script id="crudlist-table-column-info" type="text/x-handlebars-template">
-        <td data-text="{{row.name}}">
-            <strong>
-            <a href="{{site.uri.public}}/{% endverbatim %}{{cr5model}}{% verbatim %}/r/{{row.id}}">{{row.name}}</a>
-            </strong>
-        </td>
-    </script>
-
-    <script id="crudlist-table-column-text" type="text/x-handlebars-template">
-        <td>
-            {{row.description}}
-        </td>
-    </script>
-
-    <script id="crudlist-table-column-actions" type="text/x-handlebars-template">
-        <td>
-            <div class="btn-record">
-                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                    {% endverbatim %}{{translate("ACTIONS")}}{% verbatim %}
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                    <li>
-                        <a href="#" data-id="{{row.id}}" class="js-record-edit">
-                        <i class="fas fa-edit"></i> {% endverbatim %}{{translate("EDIT")}}{% verbatim %}
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" data-id="{{row.id}}" class="js-record-delete">
-                        <i class="fas fa-trash-alt"></i> {% endverbatim %}{{translate("DELETE")}}{% verbatim %}
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </td>
-    </script>
-    {% endverbatim %}
+        {% for name, column in table.columns %}
+            {{crudfield.addHBTemplate(column.template,name,cr5model)}}
+        {% endfor %}        
 {% endblock %}

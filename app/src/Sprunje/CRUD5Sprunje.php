@@ -25,6 +25,7 @@ class CRUD5Sprunje extends Sprunje
 {
     protected string $name = 'TO_BE_SET';
 
+    // TODO : Need to set this dynamically using the yaml schema
     protected array $sortable = ["name"];
 
     protected array $filterable = [];

@@ -21,7 +21,8 @@
                 </div>
                 <div class="box-body">
                     {% include "tables/crudlist.html.twig" with {
-                            "table" : crud5.table
+                            "table" : crud5.table,
+                            "cr5model" : crud5.model
                         }
                     %}
                 </div>

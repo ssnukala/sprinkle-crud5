@@ -1,0 +1,23 @@
+---
+model: groups
+title: Group Management
+description: Manage User Groups
+table:
+  id: table-group
+  css-class: crud5-table
+  columns:
+    name:
+      label: "NAME"
+      template: info
+      filter: true
+      sortable: true
+    description:
+      label: "DESCRIPTION"
+      template: text
+      filter: true
+      sortable: true
+    actions:
+      label: "ACTIONS"
+      template: actions
+      filter: false
+      sortable: false

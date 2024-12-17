@@ -22,6 +22,7 @@ use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
 use UserFrosting\Sprinkle\CRUD5\Sprunje\CRUD5Sprunje;
 use Slim\Routing\RouteContext;
 use UserFrosting\Sprinkle\Core\Log\DebugLogger;
+use UserFrosting\Support\Repository\Loader\YamlFileLoader;
 
 /**
  * Renders the group listing page.
@@ -36,6 +37,9 @@ class BasePageListAction
 {
     /** @var string Page template */
     protected string $template = 'pages/tobeset.html.twig';
+    protected array $config;
+    protected string $configFile = '';
+    protected DebugLogger $logger;
 
     /**
      * Inject dependencies.
@@ -49,8 +53,26 @@ class BasePageListAction
         //protected DebugLogger $logger,
     ) {
         error_log("Line 51: BasePageListAction: ");
+        //$this->logger->debug("Line 51: BasePageListAction: ");
     }
 
+    protected function loadConfig($slug): void
+    {
+        $this->configFile = $configFile ?? "schema://crud5/$slug.yaml";
+        $loader = new YamlFileLoader($this->configFile);
+        $this->config = $loader->load(false);
+    }
+
+    protected function getSortable(): array
+    {
+        $sortable = [];
+        foreach ($this->config['table']['columns'] as $name => $column) {
+            if ($column['sortable']) {
+                $sortable[] = $name;
+            }
+        }
+        return $sortable;
+    }
     /**
      * Receive the request, dispatch to the handler, and return the payload to
      * the response.
@@ -66,26 +88,15 @@ class BasePageListAction
         $route = $routeContext->getRoute();
         $slug = $route?->getArgument('crud_slug');
         error_log("Line 66: BasePageListAction: " . $slug);
-
+        $this->loadConfig($slug);
+        /**
+         * Loads the config into the class property.
+         *
+         * @throws \UserFrosting\Support\Exception\FileNotFoundException if config file not found
+         */
         //$this->template = 'pages/' . $slug . '.html.twig';
         $this->template = 'pages/crudlist.html.twig';
-        $page_data = [
-            'crud5' => [
-                'model' =>  $slug,
-                'title' => 'CRUD5 Title',
-                'description' => "CRUD 5 Page Description",
-                'table' => [
-                    "id" => 'table-' . $slug,
-                    "css-class" => 'crud5-table',
-                    'columns' => [
-                        ['name' => 'name', 'title' => 'Name', 'template' => 'info', 'filter' => true],
-                        ['name' => 'description', 'title' => 'Description', 'template' => 'text', 'filter' => true],
-                        ['name' => 'actions', 'title' => 'Actions', 'template' => 'actions', 'filter' => false]
-                    ]
-                ]
-            ],
-        ];
-
+        $page_data = ["crud5" => $this->config];
         return $this->view->render($response, $this->template, $page_data);
     }
 
@@ -102,14 +113,14 @@ class BasePageListAction
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
         $slug = $route?->getArgument('crud_slug');
+        $this->loadConfig($slug);
 
         // GET parameters and pass to Sprunje
         $params = $request->getQueryParams();
-        $sortable = [
-            'name',
-            'description',
-        ];
+        $sortable = $this->getSortable();
         error_log("Line 110: CRUD5 Sprunje: " . $slug);
+        //$this->logger->debug("Line 110: CRUD5 Sprunje: " . $slug);
+
         $this->sprunje->setupSprunje($slug, $sortable, $sortable);
         $this->sprunje->setOptions($params);
 

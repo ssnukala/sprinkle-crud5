@@ -1,0 +1,43 @@
+---
+model: users
+title: User Management
+description: Manage users
+table:
+  id: table-user
+  css-class: crud5-table
+  columns:
+    user_name:
+      label: "USERNAME"
+      template: info
+      filter: true
+      sortable: true
+    first_name:
+      label: "FIRST_NAME"
+      template: info
+      filter: true
+      sortable: true
+    last_name:
+      label: "LAST_NAME"
+      template: info
+      filter: true
+      sortable: true
+    email:
+      label: "EMAIL"
+      template: info
+      filter: true
+      sortable: true
+    locale:
+      label: "LOCALE"
+      template: info
+      filter: false
+      sortable: false
+    group_id:
+      label: "GROUP"
+      template: info
+      filter: true
+      sortable: true
+    actions:
+      label: "ACTIONS"
+      template: actions
+      filter: false
+      sortable: false
