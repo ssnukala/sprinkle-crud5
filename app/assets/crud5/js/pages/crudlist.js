@@ -15,10 +15,10 @@ $(document).ready(function () {
   });
 
   // Bind creation button
-  bindCrud5CreationButton($("#widget-" + page.cr5model));
+  bindCrud5CreationButton($("#widget-" + page.cr5model), { crud_slug: page.cr5model });
 
   // Bind table buttons
   $("#widget-" + page.cr5model).on("pagerComplete.ufTable", function () {
-    bindCrud5Buttons($(this));
+    bindCrud5Buttons($(this), { crud_slug: page.cr5model });
   });
 });

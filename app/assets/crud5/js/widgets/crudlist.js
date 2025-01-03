@@ -56,19 +56,12 @@ function attachCrud5Form() {
     $(".icp-auto").iconpicker({
       // this is a hacky way to add in our custom icons to the default FA5 icons.
       // See https://github.com/farbelous/fontawesome-iconpicker/issues/77
-      icons:
-        typeof sc_icons != "undefined"
-          ? $.merge(sc_icons, $.iconpicker.defaultOptions.icons)
-          : null,
+      icons: typeof sc_icons != "undefined" ? $.merge(sc_icons, $.iconpicker.defaultOptions.icons) : null,
     });
 
     // Set icon when changed
     form.find("input[name=icon]").on("input change", function () {
-      $(this)
-        .prev(".icon-preview")
-        .find("i")
-        .removeClass()
-        .addClass($(this).val());
+      $(this).prev(".icon-preview").find("i").removeClass().addClass($(this).val());
     });
 
     $(".icp-auto").iconpicker();
@@ -105,9 +98,9 @@ function bindCrud5Buttons(el, options) {
     e.preventDefault();
 
     $("body").ufModal({
-      sourceUrl: site.uri.public + "/modals/crud5s/edit",
+      sourceUrl: site.uri.public + "/modals/crud5/" + options.crud_slug + "/edit",
       ajaxParams: {
-        slug: $(this).data("slug"),
+        id: $(this).data("id"),
       },
       msgTarget: $("#alerts-page"),
     });
@@ -120,9 +113,9 @@ function bindCrud5Buttons(el, options) {
     e.preventDefault();
 
     $("body").ufModal({
-      sourceUrl: site.uri.public + "/modals/crud5/confirm-delete",
+      sourceUrl: site.uri.public + "/modals/crud5/" + options.crud_slug + "/confirm-delete",
       ajaxParams: {
-        slug: $(this).data("slug"),
+        id: $(this).data("id"),
       },
       msgTarget: $("#alerts-page"),
     });
@@ -133,21 +126,21 @@ function bindCrud5Buttons(el, options) {
 
       form.ufForm().on("submitSuccess.ufForm", function () {
         // Navigate or reload page on success
-        if (options.delete_redirect)
-          window.location.href = options.delete_redirect;
+        if (options.delete_redirect) window.location.href = options.delete_redirect;
         else window.location.reload();
       });
     });
   });
 }
 
-function bindCrud5CreationButton(el) {
+function bindCrud5CreationButton(el, options) {
+  if (!options) options = {};
   // Link create button
   el.find(".js-crud5-create").click(function (e) {
     e.preventDefault();
 
     $("body").ufModal({
-      sourceUrl: site.uri.public + "/modals/crud5/create",
+      sourceUrl: site.uri.public + "/modals/crud5/" + options.crud_slug + "/create",
       msgTarget: $("#alerts-page"),
     });
 

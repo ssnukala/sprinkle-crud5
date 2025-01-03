@@ -19,6 +19,8 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use UserFrosting\Sprinkle\CRUD5\Database\Factories\CRUD5ModelFactory;
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 use UserFrosting\Sprinkle\Core\Database\Models\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\UserInterface;
 
 /**
  * CRUD5Model Model.
@@ -51,14 +53,14 @@ class CRUD5Model extends Model implements CRUD5ModelInterface
      */
     public $timestamps = true;
 
-
+    /*
     public function __construct(
         $table = 'CRUD5_NOT_SET'
     ) {
         $this->table = $table;
         parent::__construct();
     }
-
+*/
     /**
      * Create a new factory instance for the model.
      *
@@ -67,5 +69,17 @@ class CRUD5Model extends Model implements CRUD5ModelInterface
     protected static function newFactory()
     {
         return CRUD5ModelFactory::new();
+    }
+    /**
+     * Lazily load a collection of Users which belong to this group.
+     *
+     * @return HasMany
+     */
+    public function users(): HasMany
+    {
+        /** @var string */
+        $relation = static::$ci?->get(UserInterface::class);
+
+        return $this->hasMany($relation, 'group_id');
     }
 }

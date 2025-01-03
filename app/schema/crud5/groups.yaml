@@ -21,3 +21,6 @@ table:
       template: actions
       filter: false
       sortable: false
+todo: 
+  action1: "figure out what is editable using the create, edit form validation schema"
+  action3: "rename table to listtable "

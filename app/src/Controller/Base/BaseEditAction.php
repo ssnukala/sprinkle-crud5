@@ -6,7 +6,7 @@ declare(strict_types=1);
  * UserFrosting Admin Sprinkle (http://www.userfrosting.com)
  *
  * @link      https://github.com/userfrosting/sprinkle-admin
- * @copyright Copyright (c) 2022 Alexander Weissman & Louis Charette
+ * @copyright Copyright (c) 2013-2024 Alexander Weissman & Louis Charette
  * @license   https://github.com/userfrosting/sprinkle-admin/blob/master/LICENSE.md (MIT License)
  */
 
@@ -17,19 +17,20 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use UserFrosting\Alert\AlertStream;
 use UserFrosting\Config\Config;
-use UserFrosting\Fortress\RequestDataTransformer;
 use UserFrosting\Fortress\RequestSchema;
 use UserFrosting\Fortress\RequestSchema\RequestSchemaInterface;
-use UserFrosting\Fortress\ServerSideValidator;
-use UserFrosting\I18n\Translator;
+use UserFrosting\Fortress\Transformer\RequestDataTransformer;
+use UserFrosting\Fortress\Validator\ServerSideValidator;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
-use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
+//use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
 use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\UserInterface;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
 use UserFrosting\Sprinkle\Account\Log\UserActivityLogger;
 use UserFrosting\Sprinkle\Admin\Exceptions\GroupException;
 use UserFrosting\Sprinkle\Core\Exceptions\ValidationException;
 use UserFrosting\Support\Message\UserMessage;
+use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
+use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 
 /**
  * Processes the request to update an existing group's details.
@@ -55,23 +56,24 @@ class BaseEditAction
         protected Authenticator $authenticator,
         protected Config $config,
         protected Connection $db,
-        protected Translator $translator,
         protected UserActivityLogger $userActivityLogger,
-        protected GroupInterface $groupModel,
-    ) {
-    }
+        protected CRUD5ModelInterface $crudModel,
+        protected RequestDataTransformer $transformer,
+        protected ServerSideValidator $validator,
+        protected DebugLoggerInterface $debugLogger,
+    ) {}
 
     /**
      * Receive the request, dispatch to the handler, and return the payload to
      * the response.
      *
-     * @param GroupInterface $group    The group to update, injected from middleware.
+     * @param CRUD5ModelInterface $crudModel    The group to update, injected from middleware.
      * @param Request        $request
      * @param Response       $response
      */
-    public function __invoke(GroupInterface $group, Request $request, Response $response): Response
+    public function __invoke(CRUD5ModelInterface $crudModel, Request $request, Response $response): Response
     {
-        $this->handle($group, $request);
+        $this->handle($crudModel, $request);
         $payload = json_encode([], JSON_THROW_ON_ERROR);
         $response->getBody()->write($payload);
 
@@ -81,10 +83,10 @@ class BaseEditAction
     /**
      * Handle the request.
      *
-     * @param GroupInterface $group
+     * @param CRUD5ModelInterface $crudModel
      * @param Request        $request
      */
-    protected function handle(GroupInterface $group, Request $request): void
+    protected function handle(CRUD5ModelInterface $crudModel, Request $request): void
     {
         // Get PUT parameters
         $params = (array) $request->getParsedBody();
@@ -93,15 +95,14 @@ class BaseEditAction
         $schema = $this->getSchema();
 
         // Whitelist and set parameter defaults
-        $transformer = new RequestDataTransformer($schema);
-        $data = $transformer->transform($params);
+        $data = $this->transformer->transform($schema, $params);
 
         // Validate request data
         $this->validateData($schema, $data);
-        if ($data['name'] !== $group->name) {
+        if ($data['name'] !== $crudModel->name) {
             $this->validateGroupName($data['name']);
         }
-        if ($data['slug'] !== $group->slug) {
+        if ($data['slug'] !== $crudModel->slug) {
             $this->validateGroupSlug($data['slug']);
         }
 
@@ -113,7 +114,7 @@ class BaseEditAction
 
         // Access-controlled resource - check that currentUser has permission to edit submitted fields for this user
         if (!$this->authenticator->checkAccess('update_group_field', [
-            'group'  => $group,
+            'group'  => $crudModel,
             'fields' => array_values(array_unique($fieldNames)),
         ])) {
             throw new ForbiddenException();
@@ -124,23 +125,23 @@ class BaseEditAction
         $currentUser = $this->authenticator->user();
 
         // Begin transaction - DB will be rolled back if an exception occurs
-        $this->db->transaction(function () use ($data, $group, $currentUser) {
+        $this->db->transaction(function () use ($data, $crudModel, $currentUser) {
             // Update the user and generate success messages
             foreach ($data as $name => $value) {
-                $group->setAttribute($name, $value);
+                $crudModel->setAttribute($name, $value);
             }
 
-            $group->save();
+            $crudModel->save();
 
             // Create activity record
-            $this->userActivityLogger->info("User {$currentUser->user_name} updated details for group {$group->name}.", [
+            $this->userActivityLogger->info("User {$currentUser->user_name} updated details for group {$crudModel->name}.", [
                 'type'    => 'group_update_info',
                 'user_id' => $currentUser->id,
             ]);
         });
 
-        $this->alert->addMessageTranslated('success', 'GROUP.UPDATE', [
-            'name' => $group->name,
+        $this->alert->addMessage('success', 'GROUP.UPDATE', [
+            'name' => $crudModel->name,
         ]);
     }
 
@@ -164,10 +165,10 @@ class BaseEditAction
      */
     protected function validateData(RequestSchemaInterface $schema, array $data): void
     {
-        $validator = new ServerSideValidator($schema, $this->translator);
-        if ($validator->validate($data) === false && is_array($validator->errors())) {
+        $errors = $this->validator->validate($schema, $data);
+        if (count($errors) !== 0) {
             $e = new ValidationException();
-            $e->addErrors($validator->errors());
+            $e->addErrors($errors);
 
             throw $e;
         }
@@ -180,7 +181,7 @@ class BaseEditAction
      */
     protected function validateGroupName(string $name): void
     {
-        $group = $this->groupModel->where('name', $name)->first();
+        $group = $this->crudModel->where('name', $name)->first();
         if ($group !== null) {
             $e = new GroupException();
             $message = new UserMessage('GROUP.NAME_IN_USE', ['name' => $name]);
@@ -197,7 +198,7 @@ class BaseEditAction
      */
     protected function validateGroupSlug(string $slug): void
     {
-        $group = $this->groupModel->where('slug', $slug)->first();
+        $group = $this->crudModel->where('slug', $slug)->first();
         if ($group !== null) {
             $e = new GroupException();
             $message = new UserMessage('SLUG_IN_USE', ['slug' => $slug]);

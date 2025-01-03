@@ -61,7 +61,7 @@ class CRUD5Routes implements RouteDefinitionInterface
                         ->setName('api.crud5.update-field');
             })->add(AuthGuard::class)->add(NoCache::class);
 
-            $app->group('/modals/crud5/{slug}', function (RouteCollectorProxy $group) {
+            $app->group('/modals/crud5/{crud_slug}', function (RouteCollectorProxy $group) {
                   $group->get('/confirm-delete', BaseDeleteModal::class)
                         ->add(CRUD5Injector::class)
                         ->setName('modal.crud5.delete');

@@ -15,14 +15,17 @@ namespace UserFrosting\Sprinkle\CRUD5\Controller\Base;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
-use UserFrosting\Fortress\Adapter\JqueryValidationAdapter;
+use UserFrosting\Fortress\Adapter\JqueryValidationArrayAdapter;
 use UserFrosting\Fortress\RequestSchema;
 use UserFrosting\Fortress\RequestSchema\RequestSchemaInterface;
 use UserFrosting\I18n\Translator;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
-use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
+//use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
 use UserFrosting\Sprinkle\Core\I18n\SiteLocaleInterface;
+use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
+
+use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 
 /**
  * Renders the modal form for editing an existing group.
@@ -45,41 +48,45 @@ class BaseEditModal
      */
     public function __construct(
         protected Authenticator $authenticator,
-        protected GroupInterface $groupModel,
+        protected CRUD5ModelInterface $crudModel,
         protected SiteLocaleInterface $siteLocale,
         protected Translator $translator,
         protected Twig $view,
+        protected JqueryValidationArrayAdapter $adapter,
+        protected DebugLoggerInterface $debugLogger
     ) {
+        //$this->debugLogger->debug("Line 58 - BaseEditModal constructor: Record - Table :  " . $crudModel->getTable(), $crudModel->toArray());
     }
 
     /**
      * Receive the request, dispatch to the handler, and return the payload to
      * the response.
      *
-     * @param GroupInterface $group    The group to edit, injected by the middleware.
+     * @param CRUD5ModelInterface $group    The group to edit, injected by the middleware.
      * @param Response       $response
      */
-    public function __invoke(GroupInterface $group, Response $response): Response
+    public function __invoke(CRUD5ModelInterface $crudModel, Response $response): Response
     {
-        $payload = $this->handle($group);
-
+        //$this->debugLogger->debug("Line 68 - BaseEditModal: Record - Table :  " . $crud5model->getTable(), $crud5model->toArray());
+        $payload = $this->handle($crudModel);
+        //$this->debugLogger->debug("Line 70 - BaseEditModal: Payload ", $payload);
         return $this->view->render($response, $this->template, $payload);
     }
 
     /**
      * Handle the request and return the payload.
      *
-     * @param GroupInterface $group
+     * @param CRUD5ModelInterface $group
      *
      * @return mixed[]
      */
-    protected function handle(GroupInterface $group): array
+    protected function handle(CRUD5ModelInterface $crudModel): array
     {
         // Access-controlled resource - check that currentUser has permission
         // to edit basic fields "name", "slug", "icon", "description" for this group
         $fieldNames = ['name', 'slug', 'icon', 'description'];
         if (!$this->authenticator->checkAccess('update_group_field', [
-            'group'  => $group,
+            'group'  => $crudModel,
             'fields' => $fieldNames,
         ])) {
             throw new ForbiddenException();
@@ -93,18 +100,17 @@ class BaseEditModal
 
         // Load validation rules
         $schema = $this->getSchema();
-        $validator = new JqueryValidationAdapter($schema, $this->translator);
 
         return [
-            'group'   => $group,
+            'group'   => $crudModel,
             'form'    => [
-                'action'      => "api/groups/g/{$group->slug}",
+                'action'      => "api/groups/g/{$crudModel->slug}",
                 'method'      => 'PUT',
                 'fields'      => $fields,
                 'submit_text' => $this->translator->translate('UPDATE'),
             ],
             'page'    => [
-                'validators' => $validator->rules(),
+                'validators' => $this->adapter->rules($schema),
             ],
         ];
     }

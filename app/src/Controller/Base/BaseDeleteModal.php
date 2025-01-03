@@ -17,10 +17,12 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use UserFrosting\Config\Config;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
-use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
+//use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
 use UserFrosting\Sprinkle\Admin\Exceptions\GroupException;
 use UserFrosting\Support\Message\UserMessage;
+use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
+use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 
 /**
  * Get deletion confirmation modal.
@@ -37,19 +39,19 @@ class BaseDeleteModal
         protected Authenticator $authenticator,
         protected Config $config,
         protected Twig $view,
-    ) {
-    }
+        protected DebugLoggerInterface $debugLogger,
+    ) {}
 
     /**
      * Receive the request, dispatch to the handler, and return the payload to
      * the response.
      *
-     * @param GroupInterface $group
+     * @param CRUD5ModelInterface $crudModel
      * @param Response       $response
      */
-    public function __invoke(GroupInterface $group, Response $response): Response
+    public function __invoke(CRUD5ModelInterface $crudModel, Response $response): Response
     {
-        $payload = $this->handle($group);
+        $payload = $this->handle($crudModel);
 
         return $this->view->render($response, $this->template, $payload);
     }
@@ -61,25 +63,25 @@ class BaseDeleteModal
      *
      * @return mixed[]
      */
-    protected function handle(GroupInterface $group): array
+    protected function handle(CRUD5ModelInterface $crudModel): array
     {
         // Access-controlled page based on the group.
-        $this->validateAccess($group);
+        $this->validateAccess($crudModel);
 
         // Check if there are any users in this group
         // @phpstan-ignore-next-line False negative from Laravel
-        if ($group->users()->count() > 0) {
+        if ($crudModel->users()->count() > 0) {
             $e = new GroupException();
-            $message = new UserMessage('GROUP.NOT_EMPTY', $group->toArray());
+            $message = new UserMessage('GROUP.NOT_EMPTY', $crudModel->toArray());
             $e->setDescription($message);
 
             throw $e;
         }
 
         return [
-            'group' => $group,
+            'group' => $crudModel,
             'form'  => [
-                'action' => "api/groups/g/{$group->slug}",
+                'action' => "api/groups/g/{$crudModel->slug}",
             ],
         ];
     }
@@ -89,9 +91,9 @@ class BaseDeleteModal
      *
      * @throws ForbiddenException
      */
-    protected function validateAccess(GroupInterface $group): void
+    protected function validateAccess(CRUD5ModelInterface $crudModel): void
     {
-        if (!$this->authenticator->checkAccess('delete_group', ['group' => $group])) {
+        if (!$this->authenticator->checkAccess('delete_group', ['group' => $crudModel])) {
             throw new ForbiddenException();
         }
     }

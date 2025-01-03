@@ -31,19 +31,19 @@
         {% verbatim %}
         <script id="crudlist-table-column-actions" type="text/x-handlebars-template">
             <td>
-                <div class="btn-record">
+                <div class="btn-group">
                     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
                         {% endverbatim %}{{translate("ACTIONS")}}{% verbatim %}
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                         <li>
-                            <a href="#" data-id="{{row.id}}" class="js-record-edit">
+                            <a href="#" data-id="{{row.id}}" class="js-crud5-edit">
                             <i class="fas fa-edit"></i> {% endverbatim %}{{translate("EDIT")}}{% verbatim %}
                             </a>
                         </li>
                         <li>
-                            <a href="#" data-id="{{row.id}}" class="js-record-delete">
+                            <a href="#" data-id="{{row.id}}" class="js-crud5-delete">
                             <i class="fas fa-trash-alt"></i> {% endverbatim %}{{translate("DELETE")}}{% verbatim %}
                             </a>
                         </li>
