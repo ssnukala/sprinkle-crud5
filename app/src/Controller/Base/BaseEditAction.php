@@ -96,6 +96,7 @@ class BaseEditAction
 
         // Whitelist and set parameter defaults
         $data = $this->transformer->transform($schema, $params);
+        $this->debugLogger->debug("Line 92 - CRUD5EditAction:", $data);
 
         // Validate request data
         $this->validateData($schema, $data);

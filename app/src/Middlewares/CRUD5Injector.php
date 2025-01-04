@@ -62,6 +62,7 @@ class CRUD5Injector extends AbstractInjector
         $instance = $this->getInstance($id);
 
         $request = $request->withAttribute($this->attribute, $instance);
+        //$request = $request->withAttribute('crudSlug', $crud_slug);
 
         return $handler->handle($request);
     }

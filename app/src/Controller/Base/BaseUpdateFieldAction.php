@@ -42,7 +42,7 @@ use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
  *
  * Request type: PUT
  */
-class RoleUpdateFieldAction
+class BaseUpdateFieldAction
 {
     // Request schema for client side form validation
     protected string $schema = 'schema://requests/role/edit-field.yaml';

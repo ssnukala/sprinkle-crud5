@@ -26,6 +26,8 @@ use UserFrosting\Sprinkle\Core\I18n\SiteLocaleInterface;
 use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\Routing\RouteContext;
 
 /**
  * Renders the modal form for editing an existing group.
@@ -38,10 +40,18 @@ use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 class BaseEditModal
 {
     /** @var string Page template */
-    protected string $template = 'modals/group.html.twig';
+    protected string $template = 'modals/crud5-edit.html.twig';
 
     // Request schema for client side form validation
     protected string $schema = 'schema://requests/group/edit-info.yaml';
+
+    protected string $action = 'api/crud5/';
+
+    protected string $crud_slug_attribute = 'crud_slug';
+    protected string $crud_slug = 'to_be_set';
+
+    protected string $query_field = 'id';
+
 
     /**
      * Inject dependencies.
@@ -65,9 +75,13 @@ class BaseEditModal
      * @param CRUD5ModelInterface $group    The group to edit, injected by the middleware.
      * @param Response       $response
      */
-    public function __invoke(CRUD5ModelInterface $crudModel, Response $response): Response
+    public function __invoke(CRUD5ModelInterface $crudModel, Request $request, Response $response): Response
     {
         //$this->debugLogger->debug("Line 68 - BaseEditModal: Record - Table :  " . $crud5model->getTable(), $crud5model->toArray());
+        $this->crud_slug = $this->getParameter($request, $this->crud_slug_attribute);
+        $field = $this->query_field;
+        $this->action = $this->action . $this->crud_slug . '/r/' . $crudModel->$field;
+
         $payload = $this->handle($crudModel);
         //$this->debugLogger->debug("Line 70 - BaseEditModal: Payload ", $payload);
         return $this->view->render($response, $this->template, $payload);
@@ -104,6 +118,7 @@ class BaseEditModal
         return [
             'group'   => $crudModel,
             'form'    => [
+                'crud5_action'      => $this->action,
                 'action'      => "api/groups/g/{$crudModel->slug}",
                 'method'      => 'PUT',
                 'fields'      => $fields,
@@ -125,5 +140,12 @@ class BaseEditModal
         $schema = new RequestSchema($this->schema);
 
         return $schema;
+    }
+
+    protected function getParameter(ServerRequestInterface $request, string $key): ?string
+    {
+        $routeContext = RouteContext::fromRequest($request);
+        $route = $routeContext->getRoute();
+        return $route?->getArgument($key) ?? $request->getQueryParams()[$key] ?? null;
     }
 }

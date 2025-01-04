@@ -4,6 +4,7 @@ const Encore = require("@symfony/webpack-encore");
 const sprinkles = {
   AdminLTE: require("@userfrosting/theme-adminlte/webpack.entries"),
   CRUD5: require("./webpack.entries"),
+  FormGenerator: require("@lcharette/formgenerator/webpack.entries"),
 };
 
 // Merge dependent Sprinkles entries with local entries
