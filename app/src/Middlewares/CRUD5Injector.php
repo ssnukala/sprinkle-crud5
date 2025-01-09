@@ -6,7 +6,8 @@ namespace UserFrosting\Sprinkle\CRUD5\Middlewares;
 
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 use UserFrosting\Sprinkle\CRUD5\Exceptions\CRUD5Exception;
-use UserFrosting\Sprinkle\Admin\Exceptions\RecordNotFoundException;
+//use UserFrosting\Sprinkle\Admin\Exceptions\RecordNotFoundException;
+use UserFrosting\Sprinkle\CRUD5\Exceptions\CRUD5NotFoundException;
 use UserFrosting\Sprinkle\Core\Middlewares\Injector\AbstractInjector;
 use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -33,13 +34,16 @@ class CRUD5Injector extends AbstractInjector
 
     protected function getInstance(?string $slug): CRUD5ModelInterface
     {
+        /*
         if (!$slug || !is_numeric($slug)) {
             throw new CRUD5Exception("Invalid or missing ID: '{$slug}'.");
-        }
+        }*/
 
         $record = $this->model->where($this->placeholder, $slug)->first();
         if (!$record) {
-            throw new RecordNotFoundException("No record found with ID '{$slug}' in table '{$this->model->getTable()}'.");
+            $record = new $this->model([]);
+
+            //throw new CRUD5NotFoundException("No record found with ID '{$slug}' in table '{$this->model->getTable()}'.");
         }
         //$this->debugLogger->debug("Line 44 - CRUD5Injector: Getting id : $slug " . $this->placeholder . " Placeholer", $record->toArray());
 
@@ -51,6 +55,7 @@ class CRUD5Injector extends AbstractInjector
         $crud_slug = $this->getParameter($request, $this->crud_slug);
         $id = $this->getParameter($request, $this->placeholder);
 
+        $this->debugLogger->debug("Line 58 - CRUD5Injector: Table set to '{$crud_slug}'.");
         if (!$this->validateSlug($crud_slug)) {
             throw new CRUD5Exception("Invalid CRUD slug: '{$crud_slug}'.");
         }

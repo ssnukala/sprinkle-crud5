@@ -36,14 +36,19 @@
                         {% endverbatim %}{{translate("ACTIONS")}}{% verbatim %}
                         <span class="caret"></span>
                     </button>
+
                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
                         <li>
-                            <a href="#" data-id="{{row.id}}" class="js-crud5-edit">
+                            <a href="#" data-id="{{row.id}}" class="js-crud5-edit1 js-displayForm"  data-target='crudlist-edit-form-{{row.id}}' data-formUrl="/modals/crud5/{% endverbatim %}{{model}}{% verbatim %}/edit">
                             <i class="fas fa-edit"></i> {% endverbatim %}{{translate("EDIT")}}{% verbatim %}
                             </a>
                         </li>
                         <li>
-                            <a href="#" data-id="{{row.id}}" class="js-crud5-delete">
+                            <a href="#" data-id="{{row.id}}" class="js-crud5-delete1 js-displayConfirm"
+                            data-confirm-title="Delete project" data-target='crudlist-del-form-{{row.id}}'
+                            data-confirm-message="Are your sure you want to delete the project {{project.name}}" 
+                            data-confirm-button="Yes, delete project" data-post-url="/{{project.id}}" 
+                            data-post-method="DELETE">
                             <i class="fas fa-trash-alt"></i> {% endverbatim %}{{translate("DELETE")}}{% verbatim %}
                             </a>
                         </li>

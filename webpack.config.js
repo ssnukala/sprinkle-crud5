@@ -2,9 +2,10 @@ const Encore = require("@symfony/webpack-encore");
 
 // List dependent sprinkles and local entries files
 const sprinkles = {
+  Admin: require("@userfrosting/sprinkle-admin/webpack.entries"),
   AdminLTE: require("@userfrosting/theme-adminlte/webpack.entries"),
-  CRUD5: require("./webpack.entries"),
   FormGenerator: require("@lcharette/formgenerator/webpack.entries"),
+  CRUD5: require("./webpack.entries"),
 };
 
 // Merge dependent Sprinkles entries with local entries

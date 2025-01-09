@@ -24,6 +24,6 @@ use UserFrosting\Support\Message\UserMessage;
  */
 class CRUD5Exception extends UserFacingException
 {
-    protected string $title = 'ACCOUNT.EXCEPTION.TITLE';
-    protected string|UserMessage $description = 'ACCOUNT.EXCEPTION.DESCRIPTION';
+    protected string $title = 'CRUD.EXCEPTION.TITLE';
+    protected string|UserMessage $description = 'CRUD.EXCEPTION.DESCRIPTION';
 }

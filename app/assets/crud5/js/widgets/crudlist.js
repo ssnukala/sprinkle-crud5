@@ -85,7 +85,6 @@ function attachCrud5Form() {
  */
 function bindCrud5Buttons(el, options) {
   if (!options) options = {};
-
   /**
    * Link row buttons after table is loaded.
    */

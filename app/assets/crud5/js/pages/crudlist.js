@@ -15,10 +15,16 @@ $(document).ready(function () {
   });
 
   // Bind creation button
-  bindCrud5CreationButton($("#widget-" + page.cr5model), { crud_slug: page.cr5model });
+  //bindCrud5CreationButton($("#widget-create-" + page.cr5model), { crud_slug: page.cr5model });
+  // not needed bc the form generator will handle this
 
   // Bind table buttons
   $("#widget-" + page.cr5model).on("pagerComplete.ufTable", function () {
-    bindCrud5Buttons($(this), { crud_slug: page.cr5model });
+    $(".js-displayForm").formGenerator();
+    $(".js-displayConfirm").formGenerator("confirm");
+
+    console.log($(".js-displayForm").data("events"));
+    //bindCrud5Buttons($(this), { crud_slug: page.cr5model });
+    // Not needed because the form generator will handle this
   });
 });

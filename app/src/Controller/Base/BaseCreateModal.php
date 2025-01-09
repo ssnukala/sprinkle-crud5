@@ -6,7 +6,7 @@ declare(strict_types=1);
  * UserFrosting Admin Sprinkle (http://www.userfrosting.com)
  *
  * @link      https://github.com/userfrosting/sprinkle-admin
- * @copyright Copyright (c) 2022 Alexander Weissman & Louis Charette
+ * @copyright Copyright (c) 2013-2024 Alexander Weissman & Louis Charette
  * @license   https://github.com/userfrosting/sprinkle-admin/blob/master/LICENSE.md (MIT License)
  */
 
@@ -15,13 +15,15 @@ namespace UserFrosting\Sprinkle\CRUD5\Controller\Base;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
-use UserFrosting\Fortress\Adapter\JqueryValidationAdapter;
+use UserFrosting\Fortress\Adapter\JqueryValidationArrayAdapter;
 use UserFrosting\Fortress\RequestSchema;
 use UserFrosting\Fortress\RequestSchema\RequestSchemaInterface;
 use UserFrosting\I18n\Translator;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\Account\Database\Models\Interfaces\GroupInterface;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
+
+use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 
 /**
  * Renders the modal form for creating a new group.
@@ -40,18 +42,18 @@ class BaseCreateModal
     protected string $schema = 'schema://requests/group/create.yaml';
 
     // Default group icon
-    protected string $defaultIcon = 'fas fa-user';
+    protected string $defaultIcon = 'fa-solid fa-user';
 
     /**
      * Inject dependencies.
      */
     public function __construct(
         protected Authenticator $authenticator,
-        protected GroupInterface $groupModel,
+        protected CRUD5ModelInterface $crudModel,
         protected Translator $translator,
         protected Twig $view,
-    ) {
-    }
+        protected JqueryValidationArrayAdapter $adapter,
+    ) {}
 
     /**
      * Receive the request, dispatch to the handler, and return the payload to
@@ -82,7 +84,6 @@ class BaseCreateModal
 
         // Load the request schema & validator
         $schema = $this->getSchema();
-        $validatorRegister = new JqueryValidationAdapter($schema, $this->translator);
 
         // Determine form fields to hide/disable
         $fields = [
@@ -99,7 +100,7 @@ class BaseCreateModal
                 'submit_text' => $this->translator->translate('CREATE'),
             ],
             'page'    => [
-                'validators' => $validatorRegister->rules(),
+                'validators' => $this->adapter->rules($schema),
             ],
         ];
     }

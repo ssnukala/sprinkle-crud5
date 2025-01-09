@@ -29,7 +29,8 @@
     "webpack.entries.js"
   ],
   "dependencies": {
-    "@userfrosting/theme-adminlte": "^5.0.0"
+    "@userfrosting/theme-adminlte": "^5.0.0",
+    "@lcharette/formgenerator": "^5.1.0"
   },
   "devDependencies": {
     "@symfony/webpack-encore": "^4.4.0",

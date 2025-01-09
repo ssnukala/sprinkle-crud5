@@ -19,7 +19,7 @@
                     <h3 class="box-title"><i class="fas fa-fw fa-users"></i> {{translate('CRUD', 2)}}</h3>
                     {% include "tables/table-tool-menu.html.twig" %}
                 </div>
-                <div class="box-body">
+                <div id="widget-upddel-{{crud5.model}}" class="box-body">
                     {% include "tables/crudlist.html.twig" with {
                             "table" : crud5.table,
                             "cr5model" : crud5.model
@@ -27,10 +27,11 @@
                     %}
                 </div>
                 {% if checkAccess('create_group') %}
-                <div class="box-footer">
-                    <button type="button" class="btn btn-success js-crud5-create">
+                <div id="widget-create-{{crud5.model}}" class="box-footer">
+                    <button type="button" class="btn btn-success js-crud5-create1 js-displayForm" data-target='crudlist-create-form' data-toggle="modal" data-formUrl="/modals/crud5/{{crud5.model}}/create">
                         <i class="fas fa-plus-square"></i>  {{translate("CRUD.CREATE")}}
                     </button>
+
                 </div>
                 {% endif %}
             </div>
@@ -51,8 +52,10 @@
     );
 
     </script>    
+    {#{ assets.js('js/FormGenerator') | raw }#}
 
     <!-- Include page-specific JS -->
+    {{ encore_entry_script_tags('widget.formGenerator') }}
     {{ encore_entry_script_tags('page.crudlist') }}
 
 {% endblock %}

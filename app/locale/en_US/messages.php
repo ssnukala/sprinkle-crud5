@@ -34,7 +34,7 @@ return [
         'NAME'                => 'Group name',
         'NONE'                => 'No Model',
         'NOT_EMPTY'           => "You can't do that because there are still users associated with the Model <strong>{{name}}</strong>.",
-        'NOT_FOUND'           => 'Group not found',
+        'NOT_FOUND'           => 'Record not found',
         'PAGE_DESCRIPTION'    => 'A listing of the Models for your site.  Provides management tools for editing and deleting Models.',
         'SUMMARY'             => 'Group Summary',
         'UPDATE'              => 'Details updated for Model <strong>{{name}}</strong>',

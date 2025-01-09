@@ -64,11 +64,15 @@ class CRUD5Routes implements RouteDefinitionInterface
             $app->group('/modals/crud5/{crud_slug}', function (RouteCollectorProxy $group) {
                   $group->get('/confirm-delete', BaseDeleteModal::class)
                         ->add(CRUD5Injector::class)
+                        ->setArgument('crud_action', 'confirm-delete')
                         ->setName('modal.crud5.delete');
-                  $group->get('/create', BaseCreateModal::class)
+                  $group->get('/create', BaseEditModal::class)
+                        ->add(CRUD5Injector::class)
+                        ->setArgument('crud_action', 'create')
                         ->setName('modal.crud5.create');
                   $group->get('/edit', BaseEditModal::class)
                         ->add(CRUD5Injector::class)
+                        ->setArgument('crud_action', 'edit')
                         ->setName('modal.crud5.edit');
             })->add(AuthGuard::class)->add(NoCache::class);
       }

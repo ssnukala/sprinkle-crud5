@@ -28,6 +28,7 @@ use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Routing\RouteContext;
+use UserFrosting\Sprinkle\FormGenerator\Form;
 
 /**
  * Renders the modal form for editing an existing group.
@@ -49,6 +50,9 @@ class BaseEditModal
 
     protected string $crud_slug_attribute = 'crud_slug';
     protected string $crud_slug = 'to_be_set';
+
+    protected string $crud_action = 'to_be_set';
+    protected string $box_id = 'box-generic-id';
 
     protected string $query_field = 'id';
 
@@ -75,16 +79,25 @@ class BaseEditModal
      * @param CRUD5ModelInterface $group    The group to edit, injected by the middleware.
      * @param Response       $response
      */
-    public function __invoke(CRUD5ModelInterface $crudModel, Request $request, Response $response): Response
+    public function __invoke(?CRUD5ModelInterface $crudModel, Request $request, Response $response): Response
     {
         //$this->debugLogger->debug("Line 68 - BaseEditModal: Record - Table :  " . $crud5model->getTable(), $crud5model->toArray());
         $this->crud_slug = $this->getParameter($request, $this->crud_slug_attribute);
-        $field = $this->query_field;
-        $this->action = $this->action . $this->crud_slug . '/r/' . $crudModel->$field;
+        $this->crud_action = $this->getParameter($request, 'crud_action');
+        $this->box_id = $this->getParameter($request, 'box_id');
+        //$this->crud_action = 'create';
 
+        $this->debugLogger->debug("Line 85 - BaseEditModal: CRUD Action " . date('mmddyyyy-hhmiss') . $this->crud_action);
+        $field = $this->query_field;
+        $this->action = $this->action . $this->crud_slug;
+        if ($this->crud_action !== 'create') {
+            $this->action .= '/r/' . $crudModel->$field;
+        }
         $payload = $this->handle($crudModel);
         //$this->debugLogger->debug("Line 70 - BaseEditModal: Payload ", $payload);
-        return $this->view->render($response, $this->template, $payload);
+        //return $this->view->render($response, $this->template, $payload);
+
+        return $this->view->render($response, "FormGenerator/modal.html.twig", $payload);
     }
 
     /**
@@ -114,19 +127,16 @@ class BaseEditModal
 
         // Load validation rules
         $schema = $this->getSchema();
+        $form = new Form($schema, $crudModel->toArray());
 
         return [
-            'group'   => $crudModel,
-            'form'    => [
-                'crud5_action'      => $this->action,
-                'action'      => "api/groups/g/{$crudModel->slug}",
-                'method'      => 'PUT',
-                'fields'      => $fields,
-                'submit_text' => $this->translator->translate('UPDATE'),
-            ],
-            'page'    => [
-                'validators' => $this->adapter->rules($schema),
-            ],
+            "box_id"        => $this->box_id,
+            "box_title"     => strtoupper($this->crud_slug) . ".UPDATE",
+            "submit_button" => "SAVE",
+            'form_action'      => $this->action,
+            //            "form_action"   => "api/groups/g/{$crudModel->slug}",
+            "fields"        => $form->generate(),
+            "validators"    => $this->adapter->rules($schema)
         ];
     }
 
