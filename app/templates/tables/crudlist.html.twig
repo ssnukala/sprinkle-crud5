@@ -4,62 +4,9 @@
  # Note that this template contains a "skeleton" table with an empty table body, and then a block of Handlebars templates which are used
  # to render the table cells with the data from the AJAX request.
 #}
-
 {% extends "tables/table-paginated.html.twig" %}
-
-{% import _self as crudfield %}
-{% macro addHBTemplate(type,name,model) %}
-    {% if type == 'text' %}
-        {% verbatim %}
-        <script id="crudlist-table-column-{% endverbatim %}{{name}}{% verbatim %}" type="text/x-handlebars-template">
-            <td>
-                {{row.{% endverbatim %}{{name}}{% verbatim %}}}
-            </td>
-        </script>
-        {% endverbatim %}
-    {% elseif type == 'info' %}
-        {% verbatim %}
-        <script id="crudlist-table-column-{% endverbatim %}{{name}}{% verbatim %}" type="text/x-handlebars-template">
-            <td data-text="{{row.{% endverbatim %}{{name}}{% verbatim %} }}">
-                <strong>
-                <a href="{{site.uri.public}}/{% endverbatim %}{{model}}{% verbatim %}/r/{{row.id}}">{{row.{% endverbatim %}{{name}}{% verbatim %}}}</a>
-                </strong>
-            </td>
-        </script>
-        {% endverbatim %}
-    {% elseif type == 'actions' %}
-        {% verbatim %}
-        <script id="crudlist-table-column-actions" type="text/x-handlebars-template">
-            <td>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                        {% endverbatim %}{{translate("ACTIONS")}}{% verbatim %}
-                        <span class="caret"></span>
-                    </button>
-
-                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                        <li>
-                            <a href="#" data-id="{{row.id}}" class="js-crud5-edit1 js-displayForm"  data-target='crudlist-edit-form-{{row.id}}' data-formUrl="/modals/crud5/{% endverbatim %}{{model}}{% verbatim %}/edit">
-                            <i class="fas fa-edit"></i> {% endverbatim %}{{translate("EDIT")}}{% verbatim %}
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" data-id="{{row.id}}" class="js-crud5-delete1 js-displayConfirm"
-                            data-confirm-title="Delete project" data-target='crudlist-del-form-{{row.id}}'
-                            data-confirm-message="Are your sure you want to delete the project {{project.name}}" 
-                            data-confirm-button="Yes, delete project" data-post-url="/{{project.id}}" 
-                            data-post-method="DELETE">
-                            <i class="fas fa-trash-alt"></i> {% endverbatim %}{{translate("DELETE")}}{% verbatim %}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </td>
-        </script>
-        {% endverbatim %}
-    {% endif %}
-
-{% endmacro %}
+{% import table.macrofile as custommacro %}
+{% import 'macros/crudlist-default.twig' as defaultmacro %}
 
 {% block table %}
     <table id="{{table.id}}" class="tablesorter table table-bordered table-hover table-striped" data-sortlist="{{table.sortlist}}">
@@ -92,7 +39,16 @@
      #
      # These templates require handlebars-helpers.js, moment.js
     #}
+        <!-- Cell Templates Start here table.macrofile: {{table.macrofile}} -->
         {% for name, column in table.columns %}
-            {{crudfield.addHBTemplate(column.template,name,cr5model)}}
-        {% endfor %}        
+        <!-- Field Templates Start here {{name}} - {{column.template}} -->
+            {% set fieldTemplate = custommacro.customFormat(column.template, name, cr5model) | trim -%}
+                <!-- Custom for{{name}} - {{column.template}} -->
+            {% if fieldTemplate|length == 0 %}
+                <!-- Loading Default for {{name}} - {{column.template}} -->
+                {% set fieldTemplate =  defaultmacro.defaultFormat(column.template, name, cr5model) %}
+            {% endif %}
+            {{fieldTemplate}}
+        {% endfor %}
+        <!-- Cell Templates End here -->
 {% endblock %}

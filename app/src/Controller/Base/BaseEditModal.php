@@ -46,7 +46,7 @@ class BaseEditModal
     // Request schema for client side form validation
     protected string $schema = 'schema://requests/group/edit-info.yaml';
 
-    protected string $action = 'api/crud5/';
+    protected string $action = '/api/crud5/';
 
     protected string $crud_slug_attribute = 'crud_slug';
     protected string $crud_slug = 'to_be_set';
@@ -91,10 +91,10 @@ class BaseEditModal
         $field = $this->query_field;
         $this->action = $this->action . $this->crud_slug;
         if ($this->crud_action !== 'create') {
-            $this->action .= '/r/' . $crudModel->$field;
+            $this->action .= "/r/" . $crudModel->$field;
         }
         $payload = $this->handle($crudModel);
-        //$this->debugLogger->debug("Line 70 - BaseEditModal: Payload ", $payload);
+        $this->debugLogger->debug("Line 70 - BaseEditModal: Payload ", $payload);
         //return $this->view->render($response, $this->template, $payload);
 
         return $this->view->render($response, "FormGenerator/modal.html.twig", $payload);
@@ -119,12 +119,6 @@ class BaseEditModal
             throw new ForbiddenException();
         }
 
-        // Generate form
-        $fields = [
-            'hidden'   => [],
-            'disabled' => [],
-        ];
-
         // Load validation rules
         $schema = $this->getSchema();
         $form = new Form($schema, $crudModel->toArray());
@@ -134,6 +128,7 @@ class BaseEditModal
             "box_title"     => strtoupper($this->crud_slug) . ".UPDATE",
             "submit_button" => "SAVE",
             'form_action'      => $this->action,
+            'form_method' => $this->crud_action === 'create' ? 'POST' : 'PUT',
             //            "form_action"   => "api/groups/g/{$crudModel->slug}",
             "fields"        => $form->generate(),
             "validators"    => $this->adapter->rules($schema)

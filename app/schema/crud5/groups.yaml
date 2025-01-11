@@ -5,15 +5,16 @@ description: Manage User Groups
 table:
   id: table-group
   css-class: crud5-table
+  macrofile: macros/groups.twig
   columns:
     name:
       label: "NAME"
-      template: info
+      template: groupid
       filter: true
       sortable: true
     description:
       label: "DESCRIPTION"
-      template: text
+      template: groupdesc
       filter: true
       sortable: true
     actions:

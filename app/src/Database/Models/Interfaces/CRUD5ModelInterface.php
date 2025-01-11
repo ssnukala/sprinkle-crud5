@@ -30,4 +30,6 @@ use UserFrosting\Sprinkle\Core\Database\Models\Model;
 interface CRUD5ModelInterface
 {
     public function users(): HasMany;
+    public function setFillable($fillable = []);
+    public function getFillable();
 }

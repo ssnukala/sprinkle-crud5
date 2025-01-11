@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace UserFrosting\Sprinkle\CRUD5\Middlewares;
 
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
+use UserFrosting\Sprinkle\CRUD5\Database\Models\CRUD5Model;
 use UserFrosting\Sprinkle\CRUD5\Exceptions\CRUD5Exception;
 //use UserFrosting\Sprinkle\Admin\Exceptions\RecordNotFoundException;
 use UserFrosting\Sprinkle\CRUD5\Exceptions\CRUD5NotFoundException;
@@ -28,7 +29,7 @@ class CRUD5Injector extends AbstractInjector
     protected string $attribute = 'crudModel';
 
     public function __construct(
-        protected CRUD5ModelInterface $model,
+        protected CRUD5ModelInterface $crudModel,
         protected DebugLoggerInterface $debugLogger
     ) {}
 
@@ -39,11 +40,10 @@ class CRUD5Injector extends AbstractInjector
             throw new CRUD5Exception("Invalid or missing ID: '{$slug}'.");
         }*/
 
-        $record = $this->model->where($this->placeholder, $slug)->first();
+        $record = $this->crudModel->where($this->placeholder, $slug)->first();
         if (!$record) {
-            $record = new $this->model([]);
-
-            //throw new CRUD5NotFoundException("No record found with ID '{$slug}' in table '{$this->model->getTable()}'.");
+            //$record = new CRUD5Model([]);
+            throw new CRUD5NotFoundException("No record found with ID '{$slug}' in table '{$this->crudModel->getTable()}'.");
         }
         //$this->debugLogger->debug("Line 44 - CRUD5Injector: Getting id : $slug " . $this->placeholder . " Placeholer", $record->toArray());
 
@@ -59,16 +59,17 @@ class CRUD5Injector extends AbstractInjector
         if (!$this->validateSlug($crud_slug)) {
             throw new CRUD5Exception("Invalid CRUD slug: '{$crud_slug}'.");
         }
-        $this->model->setTable($crud_slug);
+        $this->crudModel->setTable($crud_slug);
         //$this->debugLogger->debug("Line 58 - CRUD5Injector: Table set to '{$crud_slug}'.");
 
         //$this->attribute = $crud_slug;
-
-        $instance = $this->getInstance($id);
-
-        $request = $request->withAttribute($this->attribute, $instance);
-        //$request = $request->withAttribute('crudSlug', $crud_slug);
-
+        try {
+            $instance = $this->getInstance($id);
+            $request = $request->withAttribute($this->attribute, $instance);
+        } catch (CRUD5NotFoundException $e) {
+            //$this->debugLogger->debug("Line 58 - CRUD5Injector: Record not found with ID '{$id}' in table '{$crud_slug}'.");
+        }
+        //$request = $request->withAttribute($this->attribute, $instance);
         return $handler->handle($request);
     }
 

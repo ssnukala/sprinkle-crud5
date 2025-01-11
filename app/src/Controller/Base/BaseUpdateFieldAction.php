@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license   https://github.com/userfrosting/sprinkle-admin/blob/master/LICENSE.md (MIT License)
  */
 
-namespace UserFrosting\Sprinkle\Admin\Controller\Role;
+namespace UserFrosting\Sprinkle\CRUD5\Controller\Base;
 
 use Illuminate\Database\Connection;
 use Illuminate\Support\Collection;

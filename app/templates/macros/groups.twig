@@ -1,0 +1,28 @@
+{% macro customFormat(type,name,model) %}
+    {% if type == 'groupid' %}
+        <!-- customFormat from groups.twig : {{type}} -->
+        {% verbatim %}
+            <script id="crudlist-table-column-{% endverbatim %}{{name}}{% verbatim %}" type="text/x-handlebars-template">
+                <td data-text="{{row.{% endverbatim %}{{name}}{% verbatim %} }}">
+                    <strong>
+                    GRP-<a href="{{site.uri.public}}/{% endverbatim %}{{model}}{% verbatim %}/r/{{row.id}}">{{row.{% endverbatim %}{{name}}{% verbatim %}}}</a>
+                    </strong>
+                </td>
+            </script>
+        {% endverbatim %}
+    {% elseif type == 'groupdesc' %}
+        <!-- customFormat from groups.twig : {{type}} -->
+        {% verbatim %}
+            <script id="crudlist-table-column-{% endverbatim %}{{name}}{% verbatim %}" type="text/x-handlebars-template">
+                <td data-text="{{row.{% endverbatim %}{{name}}{% verbatim %} }}">
+                    <strong>
+                        <a href="{{site.uri.public}}/{% endverbatim %}{{model}}{% verbatim %}/r/{{row.id}}">GRP-{{row.id}}: {{row.name}}
+                        </a>
+                    </strong>
+                    <p> {{row.description}}</p>
+                    <sub> {{formatDate row.created_at "long" }} </sub>
+                </td>
+            </script>
+        {% endverbatim %}
+    {% endif %}
+{% endmacro %}

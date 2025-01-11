@@ -23,11 +23,14 @@ use UserFrosting\Fortress\Validator\ServerSideValidator;
 use UserFrosting\I18n\Translator;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
+use UserFrosting\Sprinkle\CRUD5\Database\Models\CRUD5Model;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
 use UserFrosting\Sprinkle\Account\Log\UserActivityLogger;
 use UserFrosting\Sprinkle\CRUD5\Exceptions\BaseException;
 use UserFrosting\Sprinkle\Core\Exceptions\ValidationException;
 use UserFrosting\Support\Message\UserMessage;
+use Slim\Routing\RouteContext;
+use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 
 /**
  * Processes the request to create a new Base Record.
@@ -45,7 +48,8 @@ use UserFrosting\Support\Message\UserMessage;
 class BaseCreateAction
 {
     // Request schema for client side form validation
-    protected string $schema = 'schema://requests/base/create.yaml';
+    protected string $schema = 'schema://requests/group/create.yaml';
+    protected string $crud_slug = 'crud_slug';
 
     /**
      * Inject dependencies.
@@ -54,11 +58,13 @@ class BaseCreateAction
         protected AlertStream $alert,
         protected Authenticator $authenticator,
         protected Connection $db,
-        protected CRUD5ModelInterface $baseModel,
+        protected CRUD5ModelInterface $crudModel,
+        //protected CRUD5Model $crudModel,
         protected Translator $translator,
         protected RequestDataTransformer $transformer,
         protected ServerSideValidator $validator,
         protected UserActivityLogger $userActivityLogger,
+        protected DebugLoggerInterface $debugLogger
     ) {}
 
     /**
@@ -74,6 +80,7 @@ class BaseCreateAction
         $this->handle($request);
         $payload = json_encode([], JSON_THROW_ON_ERROR);
         $response->getBody()->write($payload);
+        $this->debugLogger->debug("Line 81 - Invoke BaseCreatAction: Table set to." . $this->crudModel->getTable());
 
         return $response->withHeader('Content-Type', 'application/json');
     }
@@ -85,6 +92,13 @@ class BaseCreateAction
      */
     protected function handle(Request $request): void
     {
+
+        $crud_slug = $this->getParameter($request, $this->crud_slug);
+
+        //$this->debugLogger->debug("Line 98 - BaseCreatAction: Table set to '{$crud_slug}'.");
+        $this->crudModel = new CRUD5Model();
+        $this->crudModel->setTable($crud_slug);
+
         // Get POST parameters.
         $params = (array) $request->getParsedBody();
 
@@ -92,9 +106,13 @@ class BaseCreateAction
         $schema = $this->getSchema();
 
         // Whitelist and set parameter defaults
-        //$transformer = new RequestDataTransformer($schema);
         $data = $this->transformer->transform($schema, $params);
 
+        $this->crudModel->setFillable(array_keys($data));
+        $this->crudModel->forceFill($data);
+
+        //$this->debugLogger->debug("Line 115 - BaseCreatAction: Fillable Array keys - " . $this->crudModel->getTable(), array_keys($data));
+        //$this->debugLogger->debug("Line 116 - Fillable Array keys - " . $this->crudModel->getTable(), $this->crudModel->getFillable());
         // Validate request data
         $this->validateData($schema, $data);
 
@@ -104,13 +122,15 @@ class BaseCreateAction
 
         // All checks passed!  log events/activities and create base
         // Begin transaction - DB will be rolled back if an exception occurs
-        $this->db->transaction(function () use ($data, $currentUser) {
+        //$this->debugLogger->debug("Line 119 - BaseCreatAction: Saving to '{$crud_slug}'.", $data);
+        $this->db->transaction(function () use ($base, $data, $currentUser) {
             // Create the base
-            $base = new $this->baseModel($data);
-            $base->save();
-
+            //$this->debugLogger->debug("Line 122 - BaseCreatAction: Saving to Table -" . $this->crudModel->getTable(), $this->crudModel->toArray());
+            //$this->debugLogger->debug("Line 124 - BaseCreatAction: Saving to Table -" . $this->crudModel->getTable(), $this->crudModel->toArray());
+            //$this->crudModel->forceFill($data);
+            $this->crudModel->save();
             // Create activity record
-            $this->userActivityLogger->info("User {$currentUser->user_name} created base {$base->id}.", [
+            $this->userActivityLogger->info("User {$currentUser->user_name} created base {$this->crudModel->id}.", [
                 'type'    => 'base_create',
                 'user_id' => $currentUser->id,
             ]);
@@ -158,5 +178,12 @@ class BaseCreateAction
 
             throw $e;
         }
+    }
+
+    protected function getParameter(Request $request, string $key): ?string
+    {
+        $routeContext = RouteContext::fromRequest($request);
+        $route = $routeContext->getRoute();
+        return $route?->getArgument($key) ?? $request->getQueryParams()[$key] ?? null;
     }
 }

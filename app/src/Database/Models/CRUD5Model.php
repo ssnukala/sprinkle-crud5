@@ -61,6 +61,24 @@ class CRUD5Model extends Model implements CRUD5ModelInterface
         parent::__construct();
     }
 */
+
+    /**
+     * Set the the fillable Array
+     *
+     * @param array $fillable
+     *
+     * @return void
+     */
+    public function setFillable($fillable = [])
+    {
+        $this->fillable = $fillable;
+    }
+
+    public function getFillable()
+    {
+        return $this->fillable;
+    }
+
     /**
      * Create a new factory instance for the model.
      *
