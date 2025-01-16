@@ -1,0 +1,52 @@
+---
+name:
+  validators:
+    required:
+      label: "&NAME"
+      message: VALIDATE.REQUIRED
+    length:
+      label: "&NAME"
+      min: 1
+      max: 255
+      message: VALIDATE.LENGTH_RANGE
+  transformations:
+  - trim
+  form:
+    type: text
+    label: NAME
+    icon: fa-flag
+    placeholder: NAME
+slug:
+  validators:
+    required:
+      label: "&SLUG"
+      message: VALIDATE.REQUIRED
+    length:
+      label: "&SLUG"
+      min: 1
+      max: 255
+      message: VALIDATE.LENGTH_RANGE
+  transformations:
+  - trim
+  form:
+    type: text
+    label: SLUG
+    icon: fa-key
+    placeholder: SLUG
+icon:
+  validators:
+    length:
+      label: "&ICON"
+      min: 1
+      max: 100
+      message: VALIDATE.LENGTH_RANGE
+description:
+  transformations:
+  - trim
+  form:
+    type: textarea
+    label: DESCRIPTION
+    icon: fa-pencil
+    placeholder: DESCRIPTION
+    rows: 5
+  

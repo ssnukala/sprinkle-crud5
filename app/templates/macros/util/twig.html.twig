@@ -1,0 +1,4 @@
+{% macro generate(input, formarr) %}
+    {% include input.file ignore missing 
+        with { form: formarr } %}
+{% endmacro %}

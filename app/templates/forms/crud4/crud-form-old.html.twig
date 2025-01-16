@@ -1,0 +1,56 @@
+<div id='{{form.id}}_div' class='crud-form formgen-form crudlayout_{{form.type}} {{form.class}}'>
+    <div id="alerts-{{form.id}}"></div>
+    <form class='form-inline' id='{{form.id}}' name="{{form.id}}_n" 
+        form-type="{{form.type}}" form-source="{{form.source}}"
+        method="{{ (form.method) ? form.method : 'post' }}" action="{{form.action}}">
+        {% include "forms/csrf.html.twig" %}
+        <input type='hidden' value='{{form.crud_action}}' name='crud_action'>
+        <input type='hidden' name='form_type' value='{{form.type}}'>
+        <div class='form-header'></div>
+        <div class='form-body' style="width:100%;">
+            {% block form_content %}
+                <div class="row">
+                    <div class="col-md-12 hidden-xs text-center">
+                        <h4 class='crud-form-title'>{{translate(form.title)}}</h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        {% if form.type == 'table' %}
+                            {% include 'forms/FormTableGenerator.html.twig' with {
+                                form:form,
+                                crud_params: crud_params
+                            } %}
+                        {% else %}
+                            {% include 'forms/FormGeneratorSections.html.twig' with {
+                                form:form,
+                                crud_params: crud_params
+                            } %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class='col-md-6 crud-submit text-right'>
+                        <button type="submit" class="btn btn-block1 btn-md btn-warning js-submit">
+                            {% if form.submit_button %}
+                                {{ translate(form.submit_button) }}
+                            {% else %}
+                                {{translate("SUBMIT")}}
+                            {% endif %}
+                        </button>
+                    </div>
+                    <div class='col-md-6 crud-cancel text-left'>
+                        <button type="cancel" onClick='genericCRUDCancel(this);return false;'
+                            class="btn btn-block1 btn-md btn-default js-cancel crud-cancel-btn">
+                            {% if form.cancel_button %}
+                                {{ translate(form.cancel_button) }}
+                            {% else %}
+                                {{translate("CANCEL")}}
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </form>
+</div>

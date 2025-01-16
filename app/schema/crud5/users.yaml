@@ -5,6 +5,7 @@ description: Manage users
 table:
   id: table-user
   css-class: crud5-table
+  schema: user
   columns:
     user_name:
       label: "USERNAME"

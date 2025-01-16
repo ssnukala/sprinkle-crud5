@@ -5,7 +5,10 @@
  # to render the table cells with the data from the AJAX request.
 #}
 {% extends "tables/table-paginated.html.twig" %}
-{% import table.macrofile as custommacro %}
+{% if table.macrofile is not empty %}
+    {# This is a custom table with custom cell templates #}
+    {% import table.macrofile as custommacro %}
+{% endif %}
 {% import 'macros/crudlist-default.twig' as defaultmacro %}
 
 {% block table %}
@@ -14,9 +17,9 @@
             <tr>
             {% for name, column in table.columns %}
                 <th class="sorter-metatext" data-column-name="{{name}}" 
-                {% if column.template is not empty %}
+                {#% if column.template is not empty % #}
                     data-column-template="#crudlist-table-column-{{name}}" 
-                {% endif %}
+                {#% endif %#}
                 
                 data-filter="{{column.filter|default(false)?'true':'false'}}"
                      data-priority="{{loop.index}}">{{translate(column.label)}}
@@ -42,11 +45,16 @@
         <!-- Cell Templates Start here table.macrofile: {{table.macrofile}} -->
         {% for name, column in table.columns %}
         <!-- Field Templates Start here {{name}} - {{column.template}} -->
-            {% set fieldTemplate = custommacro.customFormat(column.template, name, cr5model) | trim -%}
-                <!-- Custom for{{name}} - {{column.template}} -->
+            {% set coltemplate = column.template | default('text') %}
+            {% if table.macrofile is not empty %}
+                {% set fieldTemplate = custommacro.customFormat(coltemplate, name, cr5model) | trim -%}
+            {% else %}
+                {% set fieldTemplate = '' %}
+            {% endif %}
+                <!-- Custom for{{name}} - {{coltemplate}} -->
             {% if fieldTemplate|length == 0 %}
-                <!-- Loading Default for {{name}} - {{column.template}} -->
-                {% set fieldTemplate =  defaultmacro.defaultFormat(column.template, name, cr5model) %}
+                <!-- Loading Default for {{name}} - {{coltemplate}} -->
+                {% set fieldTemplate =  defaultmacro.defaultFormat(coltemplate, name, cr5model) %}
             {% endif %}
             {{fieldTemplate}}
         {% endfor %}

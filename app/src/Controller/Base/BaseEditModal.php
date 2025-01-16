@@ -26,9 +26,9 @@ use UserFrosting\Sprinkle\Core\I18n\SiteLocaleInterface;
 use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Slim\Routing\RouteContext;
 use UserFrosting\Sprinkle\FormGenerator\Form;
+use UserFrosting\Support\Exception\FileNotFoundException;
 
 /**
  * Renders the modal form for editing an existing group.
@@ -41,7 +41,7 @@ use UserFrosting\Sprinkle\FormGenerator\Form;
 class BaseEditModal
 {
     /** @var string Page template */
-    protected string $template = 'modals/crud5-edit.html.twig';
+    //protected string $template = 'modals/crud5-edit.html.twig';
 
     // Request schema for client side form validation
     protected string $schema = 'schema://requests/group/edit-info.yaml';
@@ -87,6 +87,8 @@ class BaseEditModal
         $this->box_id = $this->getParameter($request, 'box_id');
         //$this->crud_action = 'create';
 
+        $file = $this->crud_action == 'create' ? '/create.yaml' : '/edit-info.yaml';
+        $this->schema = 'schema://requests/' . $this->crud_slug . $file;
         $this->debugLogger->debug("Line 85 - BaseEditModal: CRUD Action " . date('mmddyyyy-hhmiss') . $this->crud_action);
         $field = $this->query_field;
         $this->action = $this->action . $this->crud_slug;
@@ -109,19 +111,19 @@ class BaseEditModal
      */
     protected function handle(CRUD5ModelInterface $crudModel): array
     {
-        // Access-controlled resource - check that currentUser has permission
-        // to edit basic fields "name", "slug", "icon", "description" for this group
-        $fieldNames = ['name', 'slug', 'icon', 'description'];
-        if (!$this->authenticator->checkAccess('update_group_field', [
-            'group'  => $crudModel,
-            'fields' => $fieldNames,
-        ])) {
-            throw new ForbiddenException();
-        }
-
         // Load validation rules
         $schema = $this->getSchema();
         $form = new Form($schema, $crudModel->toArray());
+        $form_fields = $form->generate();
+        // Access-controlled resource - check that currentUser has permission
+        // to edit basic fields "name", "slug", "icon", "description" for this group
+        $field_names = array_keys($form_fields);
+        if (!$this->authenticator->checkAccess('update_group_field', [
+            'group'  => $crudModel,
+            'fields' => $field_names,
+        ])) {
+            throw new ForbiddenException();
+        }
 
         return [
             "box_id"        => $this->box_id,
@@ -129,8 +131,7 @@ class BaseEditModal
             "submit_button" => "SAVE",
             'form_action'      => $this->action,
             'form_method' => $this->crud_action === 'create' ? 'POST' : 'PUT',
-            //            "form_action"   => "api/groups/g/{$crudModel->slug}",
-            "fields"        => $form->generate(),
+            "fields"        => $form_fields,
             "validators"    => $this->adapter->rules($schema)
         ];
     }
@@ -142,12 +143,18 @@ class BaseEditModal
      */
     protected function getSchema(): RequestSchemaInterface
     {
-        $schema = new RequestSchema($this->schema);
-
+        try {
+            $schema = new RequestSchema($this->schema);
+        } catch (FileNotFoundException $e) {
+            $this->debugLogger->error("Line 150 - BaseEditModal: Schema file not found: " . $this->schema);
+            $this->schema = 'schema://requests/' . rtrim($this->crud_slug, 's') . '/edit-info.yaml';
+            $this->debugLogger->error("Line 152 - BaseEditModal: trying new schema file: " . $this->schema);
+            $schema = new RequestSchema($this->schema);
+        }
         return $schema;
     }
 
-    protected function getParameter(ServerRequestInterface $request, string $key): ?string
+    protected function getParameter(Request $request, string $key): ?string
     {
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();

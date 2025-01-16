@@ -1,0 +1,69 @@
+{% import "FormGenerator/macros/checkbox.html.twig" as checkbox %}
+{% import "forms/macros/textarea.html.twig" as textarea %}
+{% import "forms/macros/select.html.twig" as select %}
+{% import "forms/macros/text.html.twig" as text %}
+{% import "forms/macros/ufcaptcha.html.twig" as ufcaptcha %}
+{% import "FormGenerator/macros/hidden.html.twig" as hidden %}
+{% import "FormGenerator/macros/alert.html.twig" as alert %}
+
+{% set fieldsPerRow = fieldsPerRow == 5 ? 6 : fieldsPerRow %}
+{% set bcols = fieldsPerRow < 6 ? ((12 / fieldsPerRow) | round) : 1 %}
+{% set bcols1 = bcols %}
+{% set fieldno = 0 %}
+{% set lastclass = 12 %}
+{% for name, input in fields %}
+    {% if input.type == "hidden" %}
+        {{ hidden.generate(input) }}
+    {% elseif input.type == "alert" %}
+        {{ alert.generate(input) }}
+    {% else %}
+        {% if not input.hidden %}
+            {% set fieldno = fieldno + 1 %}
+            {% if lastclass == 12 %}
+                <div class="formgen-row crud-row row">
+                {% endif %}
+                {% if (input.newline == 'Y') %}
+                    {% set bcols1 = lastclass %}
+                    {% set lastclass = 0 %}
+                {% else %}
+                    {% set bcols1 = bcols %}
+                    {% set lastclass = lastclass -  bcols %}
+                {% endif %}
+                <div class="col-md-{{bcols1}} cols-{{bcols}} lastclass-{{lastclass}}">
+                    <div class="form-group has-feedback input-base  input-base-{{input.type}} filled formgen-field crud-input" style='width:100%;'>
+                        <label for="{{input.id}}" class="sr-only">
+                            {% if input.label %}{{translate(input.label)}}
+                            {% else %}&nbsp;{% endif %}
+                        </label>
+                        {% if input.name == "captcha" %}
+                            {{ ufcaptcha.generate(input) }}
+                        {% elseif input.type == "textarea" %}
+                            {{ textarea.generate(input) }}
+                        {% elseif input.type == "checkbox" %}
+                            {{ checkbox.generate(input) }}
+                        {% elseif input.type == "select" %}
+                            {{ select.generate(input) }}
+                        {% else %}
+                            {{ text.generate(input) }}
+                        {% endif %}
+                        <span class="input-base-placeholder">{{translate(input.label)}}</span>
+                        {#                        <span class="input-base-bg1">input background</span> #}
+                    </div>
+                </div>
+                {% if lastclass == 0 %}
+                </div>
+                <!-- end of FormGen Row -->
+                {% set lastclass = 12 %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% if lastclass != 0 and lastclass != 12 %}
+    <div class="col-md-{{lastclass}} lastclass"></div>
+</div>
+{% endif %}
+<!-- end of FormGenForm -->
+<div class="collapse">
+<label>Spiderbro: Don't change me bro, I'm tryin'a catch some flies!</label>
+<input name="spiderbro" value="http://"/>
+</div>

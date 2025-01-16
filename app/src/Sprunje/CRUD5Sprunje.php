@@ -42,9 +42,9 @@ class CRUD5Sprunje extends Sprunje
 
     public function setupSprunje($name, $sortable = [], $filterable = []): void
     {
-        $this->debugLogger->debug("Line 39: CRUD5 Sprunje: " . $name . " Model table is " . $this->model->getTable());
+        $this->debugLogger->debug("Line 46: CRUD5 Sprunje: " . $name . " Model table is " . $this->model->getTable(), ['sortable' => $sortable, "filterable" => $filterable]);
         $this->model->setTable($name);
-        $this->debugLogger->debug("Line 41: CRUD5 Sprunje: " . $name . " Model table is " . $this->model->getTable());
+        $this->debugLogger->debug("Line 47: CRUD5 Sprunje: " . $name . " Model table is " . $this->model->getTable(), ['sortable' => $sortable, "filterable" => $filterable]);
         $this->name = $name;
         $this->sortable = $sortable;
         $this->filterable = $filterable;

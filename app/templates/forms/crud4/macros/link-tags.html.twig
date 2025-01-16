@@ -1,0 +1,7 @@
+{% macro email(email, subject, linkclass) %}
+    <a class="email_link {{linkclass}}" href="mailto:{{email}}?Subject={{subject}}" target="_top">{{email}}</a>
+{% endmacro %}
+
+{% macro phone(phone, linkclass) %}
+    <a class="phone_link {{linkclass}}" href="tel:{{phone}}">{{phone}}</a>
+{% endmacro %}

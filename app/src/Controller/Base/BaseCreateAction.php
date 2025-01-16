@@ -50,6 +50,8 @@ class BaseCreateAction
     // Request schema for client side form validation
     protected string $schema = 'schema://requests/group/create.yaml';
     protected string $crud_slug = 'crud_slug';
+    protected string $crud_slug_attribute = 'crud_slug';
+    protected string $crud_action = 'to_be_set';
 
     /**
      * Inject dependencies.
@@ -77,10 +79,15 @@ class BaseCreateAction
     public function __invoke(Request $request, Response $response): Response
     {
         $this->validateAccess();
+        $this->crud_slug = $this->getParameter($request, $this->crud_slug_attribute);
+        $this->crud_action = $this->getParameter($request, 'crud_action');
+        $file = $this->crud_action == 'create' ? '/create.yaml' : '/edit-info.yaml';
+        $this->schema = 'schema://requests/' . $this->crud_slug . $file;
+
         $this->handle($request);
         $payload = json_encode([], JSON_THROW_ON_ERROR);
         $response->getBody()->write($payload);
-        $this->debugLogger->debug("Line 81 - Invoke BaseCreatAction: Table set to." . $this->crudModel->getTable());
+        $this->debugLogger->debug("Line 90 - Invoke BaseCreatAction: Table set to." . $this->crudModel->getTable() . " Schema " . $this->schema);
 
         return $response->withHeader('Content-Type', 'application/json');
     }
@@ -93,11 +100,9 @@ class BaseCreateAction
     protected function handle(Request $request): void
     {
 
-        $crud_slug = $this->getParameter($request, $this->crud_slug);
-
         //$this->debugLogger->debug("Line 98 - BaseCreatAction: Table set to '{$crud_slug}'.");
         $this->crudModel = new CRUD5Model();
-        $this->crudModel->setTable($crud_slug);
+        $this->crudModel->setTable($this->crud_slug);
 
         // Get POST parameters.
         $params = (array) $request->getParsedBody();
@@ -107,6 +112,7 @@ class BaseCreateAction
 
         // Whitelist and set parameter defaults
         $data = $this->transformer->transform($schema, $params);
+        $data = $this->setDefaults($data);
 
         $this->crudModel->setFillable(array_keys($data));
         $this->crudModel->forceFill($data);
@@ -123,7 +129,7 @@ class BaseCreateAction
         // All checks passed!  log events/activities and create base
         // Begin transaction - DB will be rolled back if an exception occurs
         //$this->debugLogger->debug("Line 119 - BaseCreatAction: Saving to '{$crud_slug}'.", $data);
-        $this->db->transaction(function () use ($base, $data, $currentUser) {
+        $this->db->transaction(function () use ($data, $currentUser) {
             // Create the base
             //$this->debugLogger->debug("Line 122 - BaseCreatAction: Saving to Table -" . $this->crudModel->getTable(), $this->crudModel->toArray());
             //$this->debugLogger->debug("Line 124 - BaseCreatAction: Saving to Table -" . $this->crudModel->getTable(), $this->crudModel->toArray());
@@ -137,6 +143,25 @@ class BaseCreateAction
 
             $this->alert->addMessage('success', 'BASE.CREATION_SUCCESSFUL', $data);
         });
+    }
+
+    protected function setDefaults($data)
+    {
+        if (isset($data['user_id']) && $data['user_id'] == null) {
+            $currentUser = $this->authenticator->user();
+            $data['user_id'] =   $currentUser->id;
+        }
+        $data['created_by'] =   $currentUser->id;
+
+        if (!isset($data['meta'])) {
+            $data['meta'] = [];
+        }
+
+        if (!is_array($data['meta'])) {
+            $data['meta'] = json_decode($data['meta'], true);
+        }
+
+        return $data;
     }
 
     /**

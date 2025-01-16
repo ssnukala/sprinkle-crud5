@@ -1,0 +1,118 @@
+<div id='{{form.id}}_div' class='crud-form formgen-form {{form.class}}'>
+    <div id="alerts-{{form.id}}"></div>
+    <form class='form-inline' id='{{form.id}}' name="{{form.id}}_n" form-type="{{form.type}}" form-source="{{form.source}}" 
+    method="{{ (form.method) ? form.method : 'post' }}" action="{{form.action}}"
+     {{ (form.onSubmit) ? ' onSubmit='~form.onSubmit : '' }}>
+        {% include "forms/csrf.html.twig" %}
+        <input type='hidden' value='' name='crud_action'>
+        <div class='form-header'>
+            {% if head_template is not empty %}
+                {% include head_template with {
+                        form:form
+                } %}
+            {% endif %}
+        </div>
+        <div class='form-body' style="width:100%; {{ hide_body == 'Y' ? 'display:none;':''}}"  hide_body='{{hide_body}}'>
+            {% block form_content %}
+                <div class="row">
+                    <div class="col-md-12 hidden-xs text-center">
+                        <p>
+                            <strong>
+                                {{translate(form.title|default('CRUD.TITLE'))}}</strong>
+                        </p>
+                    </div>
+                </div>
+                <div class="row crud_master_row">
+                    <div class="col-md-12">
+                        {% include 'forms/FormGeneratorSections.html.twig' with {
+                                form:{
+                                    source : form.master.source,
+                                    data : form.master.data,
+                                    sections: form.master.sections,
+                                    options: form.options,
+                                    fields : form.master.fields,
+                                    id:form.id,
+                                    data_source:form.data_source|default({}),
+                                    formLayout: form.master.formLayout,
+                                    addRowFunction: form.master.addRowFunction,
+                                    fieldsPerRow: (form.master.fieldsPerRow | default(2))
+                                }
+                            } %}
+                    </div>
+                </div>
+                <div class="row crud_detail_row">
+                    <div class="col-md-12">
+                        {% if form.detail.data is iterable  and form.detail.data|length > 0 %}
+                            {% include 'forms/FormTableWDataGenerator.html.twig' with {
+                                    form:{
+                                        source : form.detail.source,
+                                        data : form.detail.data,
+                                        fields : form.detail.fields,
+                                        id:form.id,
+                                        formLayout: form.detail.formLayout,
+                                        addRowFunction: form.detail.addRowFunction,
+                                        options: form.options
+                                    }
+                                } %}
+                        {% else %}
+                            {% include 'forms/FormTableGenerator.html.twig' with {
+                                    form:{
+                                        source : form.detail.source,
+                                        data : form.detail.data,
+                                        fields : form.detail.fields,
+                                        id:form.id,
+                                        formLayout: form.detail.formLayout,
+                                        addRowFunction: form.detail.addRowFunction,
+                                        options: form.options
+                                    }
+                                } %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if form.options.show_buttons | default('Y') =='Y' %}
+
+                    {% if form.submit_button.text %}
+                        {% set submit_val = translate(form.submit_button.text) %}
+                    {% elseif form.submit_button %}
+                        {% set submit_val = translate(form.submit_button) %}
+                    {% else %}
+                        {% set submit_val = translate('SUBMIT') %}
+                    {% endif %}
+                    {% set canceltype = form.cancel_button.type|default('cancel') %}
+                    {% if form.cancel_button.text %}
+                        {% set cancel_val = translate(form.cancel_button.text) %}
+                    {% elseif form.cancel_button %}
+                        {% set cancel_val = translate(form.cancel_button) %}
+                    {% else %}
+                        {% set cancel_val = translate('CANCEL') %}
+                    {% endif %}
+
+                    <div class="row">
+                        <div class='col-md-8 crud-submit text-center'>
+                            <button class="btn btn-block btn-md btn-warning {{form.submit_button.class|default('crud-submit-btn')}} js-submit"
+                            type="submit" value="{{submit_val}}">
+                                {{submit_val}}
+                            </button>
+                        </div>
+                        <div class='col-md-4 crud-cancel text-center'>
+                            {% set canceltype = form.cancel_button.type|default('cancel') %}
+                            <button class="btn btn-block btn-md btn-default js-cancel {{form.cancel_button.class|default('crud-cancel-btn')}}"
+                            type="{{canceltype}}" {% if canceltype =='cancel' %} onClick='genericCRUDCancel(this);return false;' {% endif %}
+                            value="{{cancel_val}}" >
+                            {{cancel_val}}
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% endblock %}
+        </div>
+        <div class='form-footer'>
+            {% if footer_template is not empty %}
+                {% include footer_template with {
+                        form:form
+                } %}
+            {% endif %}
+        </div>
+    </form>
+</div>

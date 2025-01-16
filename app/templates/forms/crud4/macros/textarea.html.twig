@@ -1,0 +1,3 @@
+{% macro generate(input) %}
+    <textarea{% for type,value in input %} {{type}}="{{value}}{{ (type=='class')?' input-base-elem ':'' }}" {% endfor %}>{{input.value}}</textarea>
+{% endmacro %}

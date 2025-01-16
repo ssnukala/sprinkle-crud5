@@ -1,0 +1,74 @@
+{% import "FormGenerator/macros/checkbox.html.twig" as checkbox %}
+{% import "FormGenerator/macros/textarea.html.twig" as textarea %}
+{% import "FormGenerator/macros/select.html.twig" as select %}
+{% import "forms/macros/select-table.html.twig" as select2 %}
+{% import "FormGenerator/macros/text.html.twig" as text %}
+{% import "FormGenerator/macros/hidden.html.twig" as hidden %}
+{% import "FormGenerator/macros/alert.html.twig" as alert %}
+
+{% if form.options.show_add | default('Y') == 'Y' %}
+    <div class='addcrudrow label label-default'>
+            <a href="#" onclick="{{form.addRowFunction | default('addNewTableCRUDRow')}}('{{form.id}}');">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{translate(form.addrow_title|default('ADD_ROW'))}}
+            </a>
+    </div>
+{% endif %}
+<table class="table table-striped table-condensed">
+        {% if form.options.show_delete | default('Y') == 'Y' %}
+            <th class='del-label'>{{translate('Del')}}</th>
+        {% endif %}
+    {% for name, input in form.fields %}
+        {% if input.type != "hidden" and input.type != "alert"%}
+            <th class='form-label'>{{translate(input.label)}}</th>
+        {% endif %}
+    {% endfor %}
+    {% set cartrow = 0 %}
+{#    {% set formdata = formdata|merge ({'blank':{} }) %} #}
+
+    {% for rowid, rowdata in form.data %}
+        <tr class='formgen-row formtable-row crud-row {{ rowid == 'blank' ? 'crud-blankrow' : ''}}' crud-rownum='{{cartrow}}'>
+            {% if form.options.show_delete| default('Y')=='Y' %}
+                <td class='formgen-field crud-delete '>
+                    <a href='#' onClick='genericDeleteCRUDTableRow(this);'>Del</a>
+                </td>
+            {% endif %}
+            {% for name, input in form.fields %}
+                {% if crud_params.crud_init is iterable %}
+                    {% if name in crud_params.crud_init | keys %}
+                        {% set input = input|merge ({'value':crud_params.crud_init[name]}) %}
+                    {% endif %}
+                {% endif %}
+
+                {% set dataindex = input.name | replace({(source ~'[0]['):'',"]":''}) %}
+                {% set inputname = input.name |replace({'[0]': '['~ cartrow ~']'}) %}
+                {% set inputid = input.id |replace({ (source ~'_0_'): (source ~'_' ~ cartrow ~'_') }) %}
+                {% set input = input|merge ({'value':rowdata[dataindex]}) %}
+                {% set input = input|merge ({'name':inputname}) %}
+                {% set input = input|merge ({'id':inputid}) %}
+                {% if input.type == "hidden" or input.hidden %}
+                    {{ hidden.generate(input) }}
+                {% elseif input.type == "alert" %}
+                    <td class='formgen-field crud-alert'>
+                        {{ alert.generate(input) }}
+                    </td>
+                {% else %}
+                    <td class='formgen-field crud-input {{name}}'>
+                        {% if not input.hidden %}
+                            {% if input.type == "textarea" %}
+                                {{ textarea.generate(input) }}
+                            {% elseif input.type == "checkbox" %}
+                                {{ checkbox.generate(input) }}
+                            {% elseif input.type == "select" %}
+                                {{ select.generate(input) }}
+                            {% else %}
+                                {{ text.generate(input) }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                {% endif %}
+            {% endfor %}
+            {% set cartrow = cartrow + 1 %}
+        </tr>
+    {% endfor %}
+</table>
+<!-- end of FormTableGenForm -->

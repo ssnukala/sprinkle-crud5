@@ -1,0 +1,7 @@
+{% macro generate(addrec) %}
+    {% if (addrec.dtid |default('')) !='' %}
+        <a href="#" onclick="addToOrderLine(this,'{{addrec.dtid}}');">
+            {{addrec.label}}
+        </a> 
+    {% endif %}
+{% endmacro %}

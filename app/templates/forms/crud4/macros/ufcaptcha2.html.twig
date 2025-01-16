@@ -1,0 +1,5 @@
+{% macro generate(input) %}
+    <label class="sr-only" for="r-form-passwordc">{{translate('CAPTCHA.VERIFY')}}</label>
+    <input type="text" name="captcha" placeholder="{{translate('CAPTCHA.SPECIFY')}}" class="input-base-elem" id='{{input.id}}' id2="r-form-captcha" style='background:src="https://uf42chinmaya.vagrant/account/captcha"'>
+    <img src="{{site.uri.public}}/account/captcha" id="captcha" data-target2="#r-form-captcha" data-target="{{input.id}}">
+{% endmacro %}

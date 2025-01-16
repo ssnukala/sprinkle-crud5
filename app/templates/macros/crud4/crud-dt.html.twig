@@ -1,0 +1,297 @@
+{% macro render_dt(template_type, cruddts, crud_params) %}
+    {% import _self as dtmacro %}
+    {% if ( crud_params is not defined ) %}
+        {% set crud_params = {} %}
+    {% endif %}
+
+    {% if template_type == 'single' %}
+        {% for dttype, cruddt in cruddts %}
+            {{ dtmacro.single(cruddt,crud_params)}}
+        {% endfor %}        
+    {% elseif template_type == 'row-page' %}
+        {% for dttype, cruddt in cruddts %}
+            {{ dtmacro.table_rowpage(cruddt, crud_params)}}
+        {% endfor %}        
+    {% elseif template_type == 'master-detail' %}
+        {{ dtmacro.master_detail(cruddts, crud_params)}}
+    {% elseif template_type == 'multitab' %}
+        {{ dtmacro.multitab(cruddts, crud_params)}}
+    {% elseif template_type == 'master-detail-ref' %}
+        {{ dtmacro.master_detail_ref(cruddts, crud_params)}}
+    {% elseif template_type == 'detail-ref' %}
+        {{ dtmacro.detail_ref(cruddts, crud_params)}}
+    {% else %}
+        <h4>Line 24 : Invalid DT Type <strong><em>"{{template_type}}"</em></strong></h4>
+    {% endif %}
+{% endmacro %}
+
+
+{% macro single(cruddt,crud_params) %}
+    {% if ( crud_params is not defined ) %}
+        {% set crud_params = {} %}
+    {% endif %}
+    {% include 'partials/datatable-crud.html.twig' with {
+        'cruddt' : cruddt,
+        'crud_params':crud_params
+        }
+    %}
+{% endmacro %}
+
+{% macro master_detail(cruddts, crud_params) %}
+    {% import _self as dtmacro %}
+    {% set crudmaster = cruddts.master %}
+    {% set cruddetail = cruddts.detail %}
+
+    {% if ( crud_params is not defined ) %}
+        {% set crud_params = {} %}
+    {% endif %}
+
+    {% if crudmaster.divclass is empty %}
+        {% set crudmaster = crudmaster|merge({'divclass': 'col-md-4'}) %}
+    {% endif %}
+
+    {% if (crud_params.master is defined) %}
+        {% set master_params = crud_params.master %}
+    {% else %}
+        {% set master_params = crud_params|merge({'childdtid':cruddetail.settings.htmlid }) %}
+    {% endif %}    
+
+
+    {{ dtmacro.single(crudmaster,master_params) }}
+
+    {% if cruddetail.divclass is empty %}
+        {% set cruddetail = cruddetail|merge({'divclass': 'col-md-8'}) %}
+    {% endif %}
+
+    {% if (crud_params.detail is defined) %}
+        {% set det_params = crud_params.detail %}
+    {% else %}
+        {% set det_params = crud_params|merge({'parentdtid':crudmaster.settings.htmlid, 'newformdiv':'newform_div_future'})%}
+    {% endif %}    
+    {{ dtmacro.single(cruddetail,det_params) }}
+{% endmacro %}
+
+{% macro master_detail_ref(cruddts, crud_params) %}
+    {% import _self as dtmacro %}
+        {% if ( crud_params is not defined ) %}
+            {% set crud_params = {} %}
+        {% endif %}
+
+        {% set crudmaster = cruddts.master %}
+        {% set cruddetail = cruddts.detail %}
+        {% set crudref = cruddts.reference %}
+        {% if crudmaster.divclass is empty %}
+            {% set crudmaster = crudmaster|merge({'divclass': 'col-md-12'}) %}                    
+        {% endif %}    
+        {#{% set chdtid = (crudmaster.childdtid is defined) ? crudmaster.childdtid : cruddetail.settings.htmlid  %}
+        {% set master_params = crud_params|merge({'childdtid':chdtid }) %} #}
+        {% if (crud_params.master is defined) %}
+            {% set master_params = crud_params.master %}
+        {% else %}
+            {% set master_params = crud_params|merge({'childdtid':cruddetail.settings.htmlid }) %}
+        {% endif %}    
+
+        {#{% set master_params = {'childdtid':cruddetail.settings.htmlid } %} #} 
+        {{ dtmacro.single(crudmaster,master_params) }}
+    </div> {#this will close the Row from the template and create another row div #}
+    <div id="alerts-refcrud"></div>
+    <div data-type='crud_detail' class="row">
+        {% if crudref.divclass is empty %}
+            {% set crudref = crudref|merge({'divclass': 'col-md-4'}) %}                    
+        {% endif %}  
+
+        {% if (crud_params.reference is defined) %}
+            {% set ref_params = crud_params.reference %}
+        {% else %}
+            {% set ref_params = crud_params|merge({'addtodtid':cruddetail.settings.htmlid }) %}
+        {% endif %}    
+        {{ dtmacro.single(crudref,ref_params) }}
+
+        {% if cruddetail.divclass is empty %}
+            {% set cruddetail = cruddetail|merge({'divclass': 'col-md-8'}) %}                    
+        {% endif %}
+
+        {% if (crud_params.detail is defined) %}
+            {% set det_params = crud_params.detail %}
+        {% else %}
+            {% set det_params = crud_params|merge({'parentdtid':crudmaster.settings.htmlid, 'newformdiv':'newform_div_future'})%}
+        {% endif %}    
+        {{ dtmacro.single(cruddetail,det_params) }}
+    {# </div> Not closing this as the template wiill have the closing </div> for the top Row #}
+{% endmacro %}
+
+{% macro detail_ref(cruddts, crud_params) %}
+{% import _self as dtmacro %}
+
+    {% if ( crud_params is not defined ) %}
+        {% set crud_params = {} %}
+    {% endif %}
+
+    {% set crudref = cruddts.reference %}
+    {% set cruddetail = cruddts.detail %}
+
+    {% if crudref.divclass is empty %}
+        {% set crudref = crudref|merge({'divclass': 'col-md-4'}) %}
+    {% endif %}
+    {% set ref_params = crud_params|merge({'addtodtid':cruddetail.settings.htmlid }) %}
+    {{ dtmacro.single(crudref,ref_params) }}
+
+    {% if cruddetail.divclass is empty %}
+        {% set cruddetail = cruddetail|merge({'divclass': 'col-md-8'}) %}
+    {% endif %}
+    {% set det_params = crud_params|merge({'newformdiv':'newform_div_future'  }) %}
+    {{ dtmacro.single(cruddetail,det_params) }}
+{% endmacro %}
+
+{% macro table_rowpage(cruddt, crud_params) %}
+{% import _self as dtmacro %}
+    {% if ( crud_params is not defined ) %}
+        {% set crud_params = {} %}
+    {% endif %}
+    {% set table_div = 'col-md-6'%}
+    {% set rowpage_div = 'col-md-6'%}
+    {% if cruddt.divclass is empty %}
+        {% set cruddt = cruddt|merge({'divclass': table_div}) %}
+    {% endif %}
+    {% set cruddt = cruddt|merge({'divclass': cruddt.divclass ~ ' dt-pagetable' }) %}
+    {{ dtmacro.single(cruddt,crud_params) }}
+    <div class='{{rowpage_div}} dt-pagerow' id='{{cruddt.settings.htmlid}}_pagerow'>
+        <div class="box box-primary" >
+            <div class="box-header dt-pagerow-head">            
+            </div>
+            <div class="box-body dt-pagerow-body" id='{{cruddt.settings.htmlid}}_pagerow_body'
+            placeholder='Select an entry in the table on the right to see contents here'>
+                <em>Select an entry in the table on the right to see contents here</em>
+                {% if cruddt.templates.rowpage is not empty %}
+                    {% include cruddt.templates.rowpage with {
+                        'dtoptions' : cruddt.settings,
+                        'crud_params': crud_params} 
+                    %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{#
+tabarr = [
+    'tab1'=>['title'=>'Datatable 1','icon'=>'fa-face','type'=>'single',dt'=>['single'=>[cruddt1] ]],
+    'tab2'=>['title'=>'Datatable 2','type'=>'master-detail','dt'=>['master'=>masterdt1, 'detail'=>detaildt1] ]]
+    'tab3'=>['title'=>'Datatable 3','dt'=>['multitab'=>['subtab01'=>['title'=>'Subdt 1','dt'=>['single'=>subcruddt1]] ]]]
+]
+#}
+
+{% macro multitab(tabarr, crud_params) %}
+{% import _self as dtmacro %}
+    {% if ( crud_params is not defined ) %}
+        {% set crud_params = {} %}
+    {% endif %}
+    {#Line 124: Tabarr Keys : {{tabarr | keys }}<br>#}
+<div class='col-md-12 crdt-multitab-wrapper cr-tabpane' > <!-- outer col div for the datatable wrapper -->
+{% set idprefix = randomStr(7) %}
+    <ul class="nav nav-tabs nav-justified crdt-tabpane-ul">
+        {% set tabactive = 'active'%}
+        {% set tabcount = 1 %}
+        {% set tottabs = tabarr|length %}
+        {% for dttab, dtarr in tabarr %}
+    {#Line 129: TabCount is {{tabcount}}, DTTab is {{dttab}} and Dtarr Keys : {{dtarr | keys }}<br>#}
+            <li class="{{tabactive}} crdt-tabpane-li {{tottabs == tabcount ? 'last' : ''}}">
+                <a href="#crdt{{idprefix}}-tab{{tabcount}}" data-toggle="tab">
+                    <span class="glyphicon glyphicon-{{ dtarr.icon| default('list-alt')}}"></span>
+                    {{translate(dtarr.title|default('TAB'))}}
+                </a>
+            </li>
+            {% set tabactive = ''%}
+            {% set tabcount = tabcount + 1 %}
+        {% endfor %}
+    </ul>
+    <div class="tab-content">
+        {% set tabcount = 1 %}
+        {% set tabactive = 'active'%}
+        {% for dttab, dtarr in tabarr %}
+    {#Line 129: TabCount is {{tabcount}}, DTTab is {{dttab}} and Dtarr Keys : {{dtarr | keys }}<br> #}
+            <div class="tab-pane {{tabactive}} crdt-tabpane-div" id="crdt{{idprefix}}-tab{{tabcount}}">
+                <div class='row crdt-tabpane'><!-- outer row div for the dt-tabpane -->
+{#}    Line 129: DT Type is  is {{dtarr.type}} , and CRUD DT Keys : {{dtarr.dt | keys | join('|')}}<br> #}
+                    {% set dt_params = dtarr.params | default(crud_params) %}
+                    {{ dtmacro.render_dt(dtarr.type, dtarr.dt, dt_params) }}
+                </div><!-- dt-tabpane row div -->
+            </div><!-- tab pane -->
+            {% set tabactive = ''%}
+            {% set tabcount = tabcount + 1 %}
+        {% endfor %}
+    </div><!-- end tab content multitab datatable -->
+</div><!-- outer col div for the datatable wrapper -->
+{% endmacro %}
+
+{# Marco : c#}
+{% macro cruddt_js(template_type, cruddts) %}
+    {% if (template_type != 'multitab') %}
+        {% set tabarr = {'tab':{'dt': cruddts}} %}
+    {% else %}
+        {% set tabarr = cruddts %}
+    {% endif %}
+    {% for dttab, dtarr in tabarr %}
+        {% for dttype, cruddt in dtarr.dt %}
+            {% include 'components/datatable.js.twig' with {
+                    'dtoptions' : cruddt.settings,
+                    'fields' : cruddt.fields,
+                    'dtfilters' : cruddt.filters
+                } 
+            %}
+        {% endfor %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro crudarr(template_type, cruddts) %}
+// Line 121 crudarr from the macro: Iniatializing the crudforms js array
+{# moving this to the dashboard javascript where it will be initialized.
+having it here resets the variable everytime this is called
+        var crudforms = [];
+#}
+    {% if (template_type != 'multitab') %}
+        {% set tabarr = {'tab': {'dt': cruddts}} %}
+    {% else %}
+        {% set tabarr = cruddts %}
+    {% endif %}
+    {% for dttab, dtarr in tabarr %}
+        {% for dttype, cruddt in dtarr.dt %}
+            {% set thisdtid = cruddt.settings.htmlid %}
+            {# Srinivas :4/2/2020 : @thisdtid : getting the DTID from settings because the dtid set in the 
+            controler may not be accurate when you just copy the array between the data tables
+            like we have for RSDashboard - Members - that shows all members, 
+            vs My Profile : just shows the current users profile
+            Both datatables are in the same page in diff tabs, so trying to reuse the array in the backend
+            for now the frotend settings and templates are separate, 
+            TODO : need to investiage if we can just share the templates, formatters etc across similar 
+            datatables.
+            #}
+            {% for dtableid, crudformarr in cruddt.crud_forms %}
+            /*
+            {#var crudformarr = {{crudformarr |json_encode| raw}} #}
+            */
+                crudforms['{{thisdtid}}'] = [];
+                //crudforms['{{dtableid}}'] = [];
+                {% for cftype, crudform in crudformarr %}
+                {# {% set fvalidator = crudform.validators is iterable  ? crudform.validators : '{}' %} #}
+                {% set fvalidator = crudform.validators %}
+                {% set fvalidator = fvalidator is not empty ? fvalidator : '{}' %}
+                crudforms['{{thisdtid}}']['{{cftype}}'] = {
+                //crudforms['{{dtableid}}']['{{cftype}}'] = {
+                        id: '{{crudform.id}}',
+                        //dtid: '{{crudform.dtid}}',
+                        dtid: '{{thisdtid}}',
+                        type: '{{crudform.type}}',
+                        show_in: '{{crudform.show_in}}',
+                        crud_action: '{{crudform.crud_action}}',
+                        crud_prefix: '{{crudform.crud_prefix}}',
+                        forfield: '{{crudform.forfield}}',
+                        validators: {{ fvalidator | raw}}
+                    };
+                    // each crud form
+                {% endfor %}
+            {% endfor %}
+            // each dt
+        {% endfor %}
+    {% endfor %}
+{% endmacro %}

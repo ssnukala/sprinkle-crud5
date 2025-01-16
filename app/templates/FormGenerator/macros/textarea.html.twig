@@ -1,0 +1,7 @@
+{% macro generate(input) %}
+    {% if input.icon %}<div class="input-group"><span class="input-group-addon"><i class="{{input.icon}}"></i></span>{% endif %}
+    <textarea {% for type,value in input %}{% if type != 'value' %}{{type}}="{{value}}"{% endif %}
+    {% endfor %}>{% if input.data_type == 'json' %}{{input.value | json_encode(constant('JSON_PRETTY_PRINT'))|raw }}{% else %}{{input.value}}
+    {% endif %}</textarea>
+    {% if input.icon %}</div>{% endif %}
+{% endmacro %}

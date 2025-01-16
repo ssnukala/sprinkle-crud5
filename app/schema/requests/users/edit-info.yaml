@@ -1,0 +1,61 @@
+---
+first_name:
+  validators:
+    length:
+      label: "&FIRST_NAME"
+      min: 1
+      max: 20
+      message: VALIDATE.LENGTH_RANGE
+  form:
+    type: text
+    label: FIRST_NAME
+    icon: fa-pencil
+    placeholder: FIRST_NAME
+last_name:
+  validators:
+    length:
+      label: "&LAST_NAME"
+      min: 1
+      max: 30
+      message: VALIDATE.LENGTH_RANGE
+  form:
+    type: text
+    label: LAST_NAME
+    icon: fa-pencil
+    placeholder: LAST_NAME
+email:
+  validators:
+    length:
+      label: "&EMAIL"
+      min: 1
+      max: 150
+      message: VALIDATE.LENGTH_RANGE
+    email:
+      message: VALIDATE.INVALID_EMAIL
+  form:
+    type: text
+    label: EMAIL
+    icon: fa-mail
+    placeholder: EMAIL
+locale:
+  validators:
+    length:
+      label: "&LOCALE"
+      min: 1
+      max: 10
+      message: VALIDATE.LENGTH_RANGE
+  form:
+    type: text
+    label: LOCALE
+    icon: fa-global
+    placeholder: LOCALE
+group_id:
+  validators:
+    integer:
+      label: "&GROUP"
+      message: VALIDATE.INTEGER
+  form:
+    type: text
+    label: GROUP
+    icon: fa-key
+    placeholder: GROUP

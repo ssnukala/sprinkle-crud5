@@ -1,0 +1,44 @@
+{% macro render_crud(form, crud_params) %}
+    {% import _self as crmacro %}
+    {% if ( crud_params is not defined ) %}
+        {% set crud_params = {} %}
+    {% endif %}
+    {% if ( crud_params.divs is not defined ) %}
+        {# {% set crud_params = crud_params|merge({'divs': {'form':'md-6','testing':'md-6'} }) %} #}
+        {% set crud_params = crud_params|merge({'divs': {'form':'md-12'} }) %}
+    {% endif %}
+    {{ crmacro.format(form,crud_params)}}
+{% endmacro %}
+
+{% macro format(form,crud_params) %}
+    {% import _self as crmacro %}
+    <div class="row">
+    {% for template, divcol in crud_params.divs %}
+        <div class="col-{{divcol}}">
+        {% if template == 'form' %}
+            {{ crmacro.form(form,crud_params) }}
+        {% else %}
+            {% include template ignore missing  with {
+                    form:form,
+                    crud_params: crud_params
+                } 
+            %}
+        {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro form(form,crud_params) %}
+    {% if form.type == 'table' %}
+        {% include 'forms/FormTableGenerator.html.twig' with {
+            form:form,
+            crud_params: crud_params
+        } %}
+    {% else %}
+        {% include 'forms/FormGeneratorSections.html.twig' with {
+            form:form,
+            crud_params: crud_params
+        } %}
+    {% endif %}
+{% endmacro %}

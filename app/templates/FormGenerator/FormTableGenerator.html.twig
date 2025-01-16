@@ -1,0 +1,73 @@
+{% import "FormGenerator/macros/checkbox.html.twig" as checkbox %}
+{% import "forms/macros/textarea.html.twig" as textarea %}
+{% import "forms/macros/select.html.twig" as select %}
+{% import "forms/macros/text.html.twig" as text %}
+{% import "forms/macros/ufcaptcha.html.twig" as ufcaptcha %}
+{% import "forms/macros/ufcaptcha2.html.twig" as ufcaptcha2 %}
+{% import "forms/macros/geocode.html.twig" as geocode %}
+{% import "FormGenerator/macros/hidden.html.twig" as hidden %}
+{% import "FormGenerator/macros/alert.html.twig" as alert %}
+
+{#
+{# 
+fields : form.fields,
+formLayout: form.formLayout,
+formid:form.id,
+options: form.options,
+data_source:form.data_source|default({})
+#}
+{% if form.options.show_add | default('Y') == 'Y' %}
+    <div class='addcrudrow label label-default'>
+        <a href="#" onclick="{{form.addRowFunction | default('addNewTableCRUDRow')}}('{{form.id}}');">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{translate(form.addrow_title|default('ADD_ROW'))}}
+        </a>
+    </div>
+        {% endif %}
+<table class="crud-table table table-striped table-condensed">
+        {% if form.options.show_delete | default('Y') == 'Y' %}
+            <th class='del-label'>{{translate('Del')}}</th>
+        {% endif %}
+    {% for name, input in form.fields %}
+        {% if input.type != "hidden" and input.type != "alert"%}
+            <th class='form-label'>{{translate(input.label)}}</th>
+        {% endif %}
+    {% endfor %}
+    <tr class='formgen-row formtable-row crud-row crud-blankrow' crud-rownum='0'>
+        {% if form.options.show_delete | default('Y') == 'Y' %}
+            <td class='formgen-field crud-delete '>
+                <a href='#' onClick='genericDeleteCRUDTableRow(this);'>Del</a>
+            </td>
+        {% endif %}
+        {% for name, input in form.fields %}
+
+        {% if crud_params.crud_init is iterable %}
+            {% if name in crud_params.crud_init | keys %}
+                {% set input = input|merge ({'value':crud_params.crud_init[name]}) %}
+            {% endif %}
+        {% endif %}
+
+            {% if input.type == "hidden" or input.hidden %}
+                {{ hidden.generate(input) }}
+            {% elseif input.type == "alert" %}
+                <td class='formgen-field crud-alert'>
+                    {{ alert.generate(input) }}
+                </td>
+            {% else %}
+                <td class='formgen-field crud-input {{name}}'>
+                    {% if not input.hidden %}
+                        {% if input.type == "textarea" %}
+                            {{ textarea.generate(input) }}
+                        {% elseif input.type == "checkbox" %}
+                            {{ checkbox.generate(input) }}
+                        {% elseif input.type == "select" %}
+                            {{ select.generate(input) }}
+                        {% else %}
+                            {{ text.generate(input) }}
+                        {% endif %}
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+</table>
+<!-- end of FormTableGenForm -->

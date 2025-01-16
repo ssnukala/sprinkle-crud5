@@ -1,0 +1,26 @@
+
+{% macro generate(input,subarray) %}
+    {% set addrfields = { lat:'lat', lng:'lng', address_line1:'address_line1', city:'locality',
+            state:'administrative_area_level_1', country:'country', zip:'postal_code' }
+    %}
+    {% for addrfield, geofield in addrfields %}
+        {% set geosource = addrfield %}
+        {% if subarray|default('N') == 'Y' %}
+            {% set geoname = input.name ~ '[' ~ addrfield ~ ']' %}
+            {% set input = input|merge({'name': input.name ~'[value]' } ) %}
+        {% else %}
+            {% set geoname = addrfield %}
+        {% endif %}
+        {% set namespace = '' %}
+        {% if '[' in input.name %}
+            {% set namespace = (input.name|split('[')) | first %}
+        {% endif %}
+        {% if namespace != '' %}
+            {% set geoname = namespace ~ '[' ~ geoname ~ ']' %}
+            {% set geosource = namespace ~ '.' ~ geosource  %}
+        {% endif %}
+        <input type='hidden' name='{{geoname}}' value='' geo-source='{{geofield}}' data-source='{{geosource}}' geo-field='{{input.id}}'>
+    {% endfor %}
+    {# text.generate(input) 
+    {#// call this where you create the geocode #} 
+{% endmacro %}

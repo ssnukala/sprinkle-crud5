@@ -18,11 +18,13 @@ use Slim\Views\Twig;
 use UserFrosting\Sprinkle\Account\Authenticate\Authenticator;
 use UserFrosting\Sprinkle\Account\Authorize\AuthorizationManager;
 use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
-//use UserFrosting\Sprinkle\Admin\Sprunje\GroupSprunje;
 use UserFrosting\Sprinkle\CRUD5\Sprunje\CRUD5Sprunje;
 use Slim\Routing\RouteContext;
 use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 use UserFrosting\Support\Repository\Loader\YamlFileLoader;
+use UserFrosting\Fortress\RequestSchema;
+use UserFrosting\Fortress\RequestSchema\RequestSchemaInterface;
+use UserFrosting\Sprinkle\Core\Exceptions\ValidationException;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -38,24 +40,9 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class BaseAction
 {
-
-    protected function loadConfig($slug): void
-    {
-        $this->configFile = $configFile ?? "schema://crud5/$slug.yaml";
-        $loader = new YamlFileLoader($this->configFile);
-        $this->config = $loader->load(false);
-    }
-
-    protected function getSortable(): array
-    {
-        $sortable = [];
-        foreach ($this->config['table']['columns'] as $name => $column) {
-            if ($column['sortable']) {
-                $sortable[] = $name;
-            }
-        }
-        return $sortable;
-    }
+    protected string $schema = 'schema://requests/tobeset.yaml';
+    protected string $crud_slug_attribute = 'crud_slug';
+    protected string $crud_slug = 'to_be_set';
 
     /**
      * Sprunje / api handler tied to this page.
@@ -81,5 +68,34 @@ class BaseAction
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
         return $route?->getArgument($key) ?? $request->getQueryParams()[$key] ?? null;
+    }
+
+    /**
+     * Load the request schema.
+     *
+     * @return RequestSchemaInterface
+     */
+    protected function getSchema(): RequestSchemaInterface
+    {
+        $schema = new RequestSchema($this->schema);
+
+        return $schema;
+    }
+
+    /**
+     * Validate request POST data.
+     *
+     * @param RequestSchemaInterface $schema
+     * @param mixed[]                $data
+     */
+    protected function validateData(RequestSchemaInterface $schema, array $data): void
+    {
+        $errors = $this->validator->validate($schema, $data);
+        if (count($errors) !== 0) {
+            $e = new ValidationException();
+            $e->addErrors($errors);
+
+            throw $e;
+        }
     }
 }

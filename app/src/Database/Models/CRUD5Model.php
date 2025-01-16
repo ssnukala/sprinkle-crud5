@@ -46,7 +46,7 @@ class CRUD5Model extends Model implements CRUD5ModelInterface
     /**
      * @var string[] The attributes that should be cast.
      */
-    protected $casts = [];
+    protected $casts = ['meta' => 'array'];
 
     /**
      * @var bool Disable timestamps for this class.

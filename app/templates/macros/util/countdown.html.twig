@@ -1,0 +1,22 @@
+{% macro countdown(deadline, id, class) %}
+  <div id='{{id}}' class="countdown-clock clockdiv {{class}}" data-deadline='{{deadline}}'>
+    <div>
+      <span id='{{id}}_days' class="days"></span>
+      <div class="clock-smalltext">Days</div>
+    </div>
+    <div>
+      <span id='{{id}}_hrs' class="hours"></span>
+      <div class="clock-smalltext">Hrs</div>
+    </div>
+    <div>
+      <span id='{{id}}_mins' class="minutes"></span>
+      <div class="clock-smalltext">Min</div>
+    </div>
+    {#}
+    <div>
+      <span id='{{id}}_sec' class="seconds"></span>
+      <div class="clock-smalltext">Sec</div>
+    </div>
+    #}
+  </div>
+{% endmacro %}

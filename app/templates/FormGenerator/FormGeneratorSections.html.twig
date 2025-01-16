@@ -1,0 +1,115 @@
+{% import "FormGenerator/macros/checkbox.html.twig" as checkbox %}
+{% import "forms/macros/textarea.html.twig" as textarea %}
+{% import "forms/macros/select.html.twig" as select %}
+{% import "forms/macros/text.html.twig" as text %}
+{% import "forms/macros/ufcaptcha.html.twig" as ufcaptcha %}
+{% import "forms/macros/ufcaptcha2.html.twig" as ufcaptcha2 %}
+{% import "forms/macros/geocode.html.twig" as geocode %}
+{% import "forms/macros/twig.html.twig" as twigfile %}
+{% import "FormGenerator/macros/hidden.html.twig" as hidden %}
+{% import "FormGenerator/macros/alert.html.twig" as alert %}
+{#
+    fields : form.fields,
+    sections: form.sections,
+    formLayout: form.formLayout,
+    fieldsPerRow: (form.fieldsPerRow | default(2)),
+    formid:form.id,
+    options: form.options,
+    data_source:form.data_source|default({}),
+#}
+{% set fieldsPerRow = form.fieldsPerRow | default(2) %}
+{% set fieldsPerRow = fieldsPerRow  == 5 ? 6 : fieldsPerRow %}
+{% set bcols = fieldsPerRow < 6 ? ((12 / fieldsPerRow) | round) : 1 %}
+{% for section_name, section_fields in form.sections %}
+    {% set bcols1 = bcols %}
+    {% set fieldno = 0 %}
+    {% set lastclass = 12 %}
+{#}    {% if section_name != 'all' %}  filtering these in the Cotroller itself, 
+what ever is left in all are extra fields that are needed #}
+        {% if section_name != 'all' %}
+            <h5 class="crud-section-title"><em>{{section_name}}</em></h5>
+        {% endif %}
+        {% for field_name in section_fields %}
+            {% set input = attribute(form.fields, field_name) %}
+            {% if (input is iterable) %}
+                {% if input.type == "hidden" %}
+                    {{ hidden.generate(input) }}
+                {% elseif input.type == "alert" %}
+                    {{ alert.generate(input) }}
+                {% else %}
+                    {% if not input.hidden %}
+                        {% set fieldno = fieldno + 1 %}
+                        {% if lastclass == 12 %}
+                            <div class="formgen_row crud_row row">
+                        {% endif %}
+                        {% if (input.newline == 'Y') %}
+                            {% set bcols1 = lastclass %}
+                            {% set lastclass = 0 %}
+                        {% else %}
+                                {% if ((input.div_cols|default(0) > 0)) %}
+                                    {% set bcols = input.div_cols > lastclass ? lastclass : input.div_cols %}
+                                {% endif %}
+                                {% set bcols1 = bcols %}
+                                {% set lastclass = lastclass -  bcols %}
+                        {% endif %}
+                            <div class="col-md-{{bcols1}} cols-{{bcols}} lastclass-{{lastclass}}">
+
+                                {% if input.type == "twig" %}
+                                    {{ twigfile.generate(input,form) }}
+                                {% else %}
+                                <div class="form-group has-feedback input-base  input-base-{{input.type}} filled formgen_field crud_input" style='width:100%;'>
+                                    <label for="{{input.id}}" class="sr-only">
+                                        {% if input.label %}{{translate(input.label)}}
+                                        {% else %}&nbsp;{% endif %}
+                                    </label>
+                                    {#render the text before and after#}
+                                    {% if input.text_before is not empty %}
+                                        <p class='text-before'>{{input.text_before}}</p>
+                                        {% set input = unsetKey(input,'text_before') %}
+                                    {% endif %}
+                                    {% if input.text_after is not empty %}
+                                        <p class='text-after'>{{input.text_after}}</p>
+                                        {% set input = unsetKey(input,'text_after') %}
+                                    {% endif %}
+                                    {% if input.name == "captcha" %}
+                                        {{ ufcaptcha2.generate(input) }}
+                                    {% elseif input.type == "textarea" %}
+                                        {{ textarea.generate(input) }}
+                                    {% elseif input.type == "checkbox" %}
+                                        {{ checkbox.generate(input) }}
+                                    {% elseif input.type == "select" %}
+                                        {{ select.generate(input) }}
+                                    {% elseif input.type == "geocode" %}
+                                        {{ geocode.generate(input,'N') }}
+                                        {{ text.generate(input) }}
+                                    {% else %}
+                                        {{ text.generate(input) }}
+                                    {% endif %}
+                                    <span class="input-base-placeholder">{{translate(input.label)}}</span>
+                                    {#                        <span class="input-base-bg1">input background</span> #}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if lastclass == 0 %}
+                            </div>
+                            <!-- end of FormGen Row -->
+                            {% set lastclass = 12 %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+{#}    {% endif %} #}
+
+    {% if lastclass != 0 and lastclass != 12 %}
+        <div class="col-md-{{lastclass}} lastclass"></div>
+        </div>
+    {% endif %}
+
+{% endfor %}
+
+<!-- end of FormGenForm -->
+<div class="collapse">
+<label>Spiderbro: Don't change me bro, I'm tryin'a catch some flies!</label>
+<input name="spiderbro" value="http://"/>
+</div>

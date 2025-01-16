@@ -1,0 +1,55 @@
+{% macro generate(input) %}
+{% import _self as selmacro %}
+    {% set thisval = input.value %} 
+    <select{% for type,value in input %}{% if (type != "options" and type != "select2_options") %} 
+    {{type}}="{{value}}{{(type=='class')?' sn-select input-base-elem ':''}}" {% endif %} {% endfor %}>
+        {% if (input.grouped | default('N') == 'Y') %}
+            {% for recid, grouprec in input.options %}
+                {% if grouprec.children is empty %} 
+                    <option value="{{grouprec.id}}" {% if grouprec.id == thisval %} selected="selected"  {% endif %} >
+                        {{ grouprec.text is not empty ? translate(grouprec.text) : grouprec.text }}
+                        {#translate(label)#}
+                    </option>
+                {% else %}
+                    <optgroup label="{{grouprec.text}}" {% if grouprec.id is not empty %} id='{{grouprec.id}}' {% endif %}>
+                    {% for childid, optrec in grouprec.children %}
+                        {#{% for optid, childopt in optrec %} #}
+                            {% if thisval is empty %} {% set thisval = optrec.id %} {% endif %}
+                            <option value="{{optrec.id}}" {% if optrec.id == thisval %} selected="selected"  {% endif %} >
+                                {{ optrec.text is not empty ? translate(optrec.text) : optrec.text }}
+                            </option>
+                        {#{% endfor %} #}
+                    {% endfor %}
+                    </optgroup>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            {% for option, label in input.options %}
+                {% if label is iterable %}
+                    {% set dataattr = '' %}
+                    {% for dataid, dataval in label %}
+                        {% if dataid != 'id' and dataid != 'text' %}
+                            {% set dataattr = dataattr ~ ' data-'~ dataid ~'='~ dataval  %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set option = label.id %}
+                    {% set label = label.text %}
+                {% endif %}
+
+                {% if thisval is empty %} {% set thisval = option %} {% endif %}
+                <option value="{{option}}" {% if option == thisval %} selected="selected"  {% endif %} {{dataattr}} >
+                            {{ label is not empty ? translate(label) : label }}
+                    {#translate(label)#}
+                </option>
+            {% endfor %}
+        {% endif %}
+    </select>
+{% endmacro %}
+{#
+        {% for option, label in input.options %}
+            {% if thisval is empty %} {% set thisval = option %} {% endif %}
+            <option value="{{option}}" {% if option == thisval %} selected="selected"  {% endif %} >
+                {{translate(label)}}
+            </option>
+        {% endfor %}
+#}

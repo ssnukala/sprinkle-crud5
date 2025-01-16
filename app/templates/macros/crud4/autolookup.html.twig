@@ -1,0 +1,12 @@
+{% macro addlookup(field_name,data,field_class,placeholder,help_text) %}
+    {% if help_text is not empty %}
+        <div style='width:100%;'>{{help_text}}</div>
+    {% endif %}
+    <div class="form-group input-base input-base-select filled crdt-autolookup-div" 
+    style="padding:0px; display:block;">
+        <select class="form-control input-base-elem1 crdt-autolookup {{field_class}}"  
+        name='{{field_name}}' {% for type,value in data %} data-{{type}}="{{value}}"{% endfor %} 
+            style="width1:130px !important;"></select>
+        <span class="input-base-placeholder">{{placeholder | default('lookup...')}}</span>
+    </div>
+{% endmacro %}

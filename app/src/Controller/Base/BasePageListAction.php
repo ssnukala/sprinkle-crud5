@@ -21,7 +21,7 @@ use UserFrosting\Sprinkle\Account\Exceptions\ForbiddenException;
 //use UserFrosting\Sprinkle\Admin\Sprunje\GroupSprunje;
 use UserFrosting\Sprinkle\CRUD5\Sprunje\CRUD5Sprunje;
 use Slim\Routing\RouteContext;
-use UserFrosting\Sprinkle\Core\Log\DebugLogger;
+use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 use UserFrosting\Support\Repository\Loader\YamlFileLoader;
 
 /**
@@ -39,7 +39,6 @@ class BasePageListAction
     protected string $template = 'pages/tobeset.html.twig';
     protected array $config;
     protected string $configFile = '';
-    protected DebugLogger $logger;
 
     /**
      * Inject dependencies.
@@ -50,9 +49,9 @@ class BasePageListAction
         protected Authenticator $authenticator,
         protected CRUD5Sprunje $sprunje,
         protected Twig $view,
-        //protected DebugLogger $logger,
+        protected DebugLoggerInterface $debugLogger
     ) {
-        error_log("Line 51: BasePageListAction: ");
+        //error_log("Line 51: BasePageListAction: ");
         //$this->logger->debug("Line 51: BasePageListAction: ");
     }
 
@@ -66,12 +65,27 @@ class BasePageListAction
     protected function getSortable(): array
     {
         $sortable = [];
+        //$this->debugLogger->debug("Line 68: CRUD5 Sprunje: ", $this->config['table']['columns']);
         foreach ($this->config['table']['columns'] as $name => $column) {
+            $this->debugLogger->debug("Line 70: CRUD5 Sprunje: $name => ", $column);
             if ($column['sortable']) {
                 $sortable[] = $name;
             }
         }
+        $this->debugLogger->debug("Line 73: CRUD5 Sprunje: ", $sortable);
         return $sortable;
+    }
+
+    protected function getFilterable(): array
+    {
+        $filterable = [];
+        foreach ($this->config['table']['columns'] as $name => $column) {
+            //$this->debugLogger->debug("Line 73: CRUD5 Sprunje: ", $column->label);
+            if ($column['searchable']) {
+                $filterable[] = $name;
+            }
+        }
+        return $filterable;
     }
     /**
      * Receive the request, dispatch to the handler, and return the payload to
@@ -87,7 +101,7 @@ class BasePageListAction
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
         $slug = $route?->getArgument('crud_slug');
-        error_log("Line 66: BasePageListAction: " . $slug);
+        //error_log("Line 66: BasePageListAction: " . $slug);
         $this->loadConfig($slug);
         /**
          * Loads the config into the class property.
@@ -114,14 +128,13 @@ class BasePageListAction
         $route = $routeContext->getRoute();
         $slug = $route?->getArgument('crud_slug');
         $this->loadConfig($slug);
-
+        //$this->debugLogger->debug("Line 127: CRUD5 Sprunje: $slug - Configuration ", $this->config);
         // GET parameters and pass to Sprunje
         $params = $request->getQueryParams();
         $sortable = $this->getSortable();
-        error_log("Line 110: CRUD5 Sprunje: " . $slug);
-        //$this->logger->debug("Line 110: CRUD5 Sprunje: " . $slug);
-
-        $this->sprunje->setupSprunje($slug, $sortable, $sortable);
+        $filterable = $this->getFilterable();
+        $this->debugLogger->debug("Line 120: CRUD5 Sprunje: $slug ", $sortable);
+        $this->sprunje->setupSprunje($slug, $sortable, $filterable);
         $this->sprunje->setOptions($params);
 
         // Be careful how you consume this data - it has not been escaped and contains untrusted user-supplied content.

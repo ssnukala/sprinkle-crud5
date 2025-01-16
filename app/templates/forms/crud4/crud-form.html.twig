@@ -1,0 +1,74 @@
+{% import "macros/crud-format.html.twig" as crud_macro %}
+<div id='{{form.id}}_div' class='crud-form formgen-form crudlayout_{{form.type}} {{form.class}}'>
+	<div id="alerts-{{form.id}}"></div>
+	<form class='form-inline' id='{{form.id}}' name="{{form.id}}_n" form-type="{{form.type}}" 
+	form-source="{{form.source}}" method="{{ (form.method) ? form.method : 'post' }}" 
+	action="{{form.action}}">
+		{% include "forms/csrf.html.twig" %}
+		<input type='hidden' value='{{form.crud_action}}' name='crud_action'>
+		<input type='hidden' name='form_type' value='{{form.type}}'>
+		<div class='form-header'></div>
+		<div class='form-body' style="width:100%;">
+			{% block form_content %}
+				{% block form_title %}
+					{% if (form.title is not empty ) %}
+					<div class="row">
+						<div class="col-md-12 hidden-xs text-center">
+							<h4 class='crud-form-title'>{{translate(form.title)}}</h4>
+						</div>
+					</div>
+					{% endif %}
+				{% endblock %}
+				{% block form_pretext %}
+					{% if form.include_before is not empty %}
+						<div class='form_include'>
+							{% include form.include_before ignore missing %}
+						</div>
+					{% endif %}
+					{% if form.pretext is not empty %}
+						<p class='text-before'>{{form.pretext}}</p>
+					{% endif %}
+				{% endblock %}
+				{% block form_fields %}
+					{% if ( crud_params is not defined ) %}
+						{% set crud_params = {} %}
+					{% endif %}
+					{{crud_macro.render_crud(form, crud_params)}}
+				{% endblock %}
+				{% block form_buttons %}
+					<div class="row crud-action-buttons">
+						<div class='col-md-6 col-xs-6 crud-submit text-right'>
+							<button type="submit" class="btn btn-block1 btn-md btn-warning js-submit">
+								{% if form.submit_button %}
+									{{ translate(form.submit_button) }}
+								{% else %}
+									{{translate("SUBMIT")}}
+								{% endif %}
+							</button>
+						</div>
+						<div class='col-md-6 col-xs-6 crud-cancel text-left'>
+							<button type="cancel" onclick='genericCRUDCancel(this);return false;' class="btn btn-block1 btn-md btn-default js-cancel crud-cancel-btn">
+								{% if form.cancel_button %}
+									{{ translate(form.cancel_button) }}
+								{% else %}
+									{{translate("CANCEL")}}
+								{% endif %}
+							</button>
+						</div>
+					</div>
+				{% endblock %}
+				{% block form_posttext %}
+					{% if form.include_after is not empty %}
+						<div class='form_include'>
+							{% include form.include_after ignore missing %}
+						</div>
+					{% endif %}
+					{% if form.posttext is not empty %}
+						<p class='text-after'>{{form.posttext|raw}}</p>
+					{% endif %}
+				{% endblock %}
+
+			{% endblock %}
+		</div>
+	</form>
+</div>

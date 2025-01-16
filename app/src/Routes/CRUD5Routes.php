@@ -50,14 +50,18 @@ class CRUD5Routes implements RouteDefinitionInterface
                         ->setName('api_crud5');
                   $group->delete('/r/{id}', BaseDeleteAction::class)
                         ->add(CRUD5Injector::class)
+                        ->setArgument('crud_action', 'delete')
                         ->setName('api.crud5.delete');
                   $group->post('', BaseCreateAction::class)
+                        ->setArgument('crud_action', 'create')
                         ->setName('api.crud5.create');
                   $group->put('/r/{id}', BaseEditAction::class)
                         ->add(CRUD5Injector::class)
+                        ->setArgument('crud_action', 'edit')
                         ->setName('api.crud5.edit');
                   $group->put('/r/{id}/{field}', BaseUpdateFieldAction::class)
                         ->add(CRUD5Injector::class)
+                        ->setArgument('crud_action', 'edit_field')
                         ->setName('api.crud5.update-field');
             })->add(AuthGuard::class)->add(NoCache::class);
 

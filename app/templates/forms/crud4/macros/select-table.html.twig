@@ -1,0 +1,9 @@
+{% macro generate(input) %}
+    <select {% for type,value in input %}{% if type != "options" %}{{type}}="{{type != 'class' ? value: (value|replace({'js-select2':''}))~' table-select2'}}"{% endif %}{% endfor %}>
+        {% for option, label in input.options %}
+            <option value="{{option}}" {% if (option == input.value) %} selected="selected{% endif %}">
+                {{translate(label)}}
+            </option>
+        {% endfor %}
+    </select>
+{% endmacro %}

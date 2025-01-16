@@ -1,0 +1,19 @@
+{% macro generate(dtid,crudformdiv,label,success,crud_source,icon,linkclass) %}
+{% set crud_source = crud_source|default('datatable') %}
+    <a class='cr-editlink {{linkclass|default('')}}' href="#" onclick="initializeCrudForm('{{crud_source}}','{{dtid}}','{{crudformdiv}}',{row.id},{{success|default('genericCRUDSuccess')}});">
+        <span class="glyphicon glyphicon-{{icon | default('new-window')}}" aria-hidden="true"> </span> {{label|default(translate('EDIT'))}}
+    </a>
+{% endmacro %}
+
+{% macro generate2(dtid,crudformdiv,options) %}
+{% set crud_source = options.crud_source|default('datatable') %}
+{% set icon = options.icon | default('new-window') %}
+{% set label = options.label | default(translate('EDIT')) %}
+{% set success = options.success | default('genericCRUDSuccess') %}
+{% set linkclass = options.linkclass | default('') %}
+{% set feopt = options.feoptions | default({}) %}
+
+    <a class='cr-editlink {{linkclass}}' href="#" onclick="initializeCrudForm('{{crud_source}}','{{dtid}}','{{crudformdiv}}',{row.id},{{success}},{{feopt|json_encode}});">
+        <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"> </span> {{label}}
+    </a>
+{% endmacro %}

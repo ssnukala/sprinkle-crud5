@@ -1,0 +1,40 @@
+{% macro add(formatter,forfield,action,ufCallback,renderCallback,icon,showtext) %}
+    {% import _self as addhtml %}
+    <div class='rs-pencil rs-pencil-{{forfield}}'> 
+        <span class="glyphicon glyphicon-{{icon| default('pencil')}} rs-editfield-icon rs-editfield" 
+            data-forfield='{{forfield}}' aria-hidden="true" 
+            onClick='showFieldEdit(this,"{{formatter}}","{{forfield}}","{{action}}"{% if ufCallback is not empty %},{{ufCallback}}{% endif %}{% if renderCallback is not empty %},{{renderCallback}}{% endif %} );' >
+            {% if showtext is not empty %}<span class="label label-default">{{showtext}}</span>{% endif %}
+        </span>
+        <div class='rs-pencil-form rs-pencil-form-{{forfield}}' data-forfield='{{forfield}}'>
+        </div>    
+    </div>
+{% endmacro %}
+
+{% macro add2(formatter,forfield,action,options) %}
+    {% import _self as addhtml %}
+    {# ufCallback,renderCallback,icon,showtext #}
+    <div class='rs-pencil rs-pencil-{{forfield}} {% if options.div_class is not empty %}{{options.div_class}}{% endif %}'> 
+        <span class="rs-editfield-icon rs-editfield {% if options.class is not empty %}{{options.class}}{% endif %}"  data-forfield='{{forfield}}'
+        onClick='{{options.callFunction|default("showFieldEdit2")}}(this,"{{formatter}}","{{forfield}}","{{action}}"{% if options is not empty %},{{options|json_encode|raw}}{% endif %});'>
+            {% if options.showText is not empty %}<span class="1label 1label-default">{{options.showText| raw }}</span>{% endif %}
+            <span class="glyphicon glyphicon-{{options.icon| default('pencil')}}" aria-hidden="true"  >
+            </span>
+        </span>
+        <div class='rs-pencil-form rs-pencil-form-{{forfield}} {% if options.form_class is not empty %}{{options.form_class}}{% endif %}' data-forfield='{{forfield}}'>
+        </div>    
+    </div>
+{% endmacro %}
+
+
+{% macro addplus(formatter,forfield,action,ufCallback,renderCallback) %}
+    {% import _self as addhtml %}
+    {{ addhtml.add(formatter,forfield,action,ufCallback,renderCallback,'plus') }}
+{% endmacro %}
+
+{% macro addtags(formatter,forfield,action,options) %}
+    {% import _self as addhtml %}
+    {% set options = options|merge ({'class':' btn btn-primary btn-xs '}) %}
+{#}    {% set options = {'ufCallback':ufCallback,'renderCallback':renderCallback,'icon':'tags','showText':tagtext} %} #}
+    {{ addhtml.add2(formatter,forfield,action,options) }}
+{% endmacro %}

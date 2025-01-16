@@ -5,6 +5,7 @@ description: Manage User Groups
 table:
   id: table-group
   css-class: crud5-table
+  schema: groups
   macrofile: macros/groups.twig
   columns:
     name:

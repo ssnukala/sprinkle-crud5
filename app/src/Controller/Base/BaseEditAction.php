@@ -31,6 +31,7 @@ use UserFrosting\Sprinkle\Core\Exceptions\ValidationException;
 use UserFrosting\Support\Message\UserMessage;
 use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
+use Slim\Routing\RouteContext;
 
 /**
  * Processes the request to update an existing group's details.
@@ -46,8 +47,11 @@ use UserFrosting\Sprinkle\Core\Log\DebugLoggerInterface;
 class BaseEditAction
 {
     // Request schema for client side form validation
-    protected string $schema = 'schema://requests/group/edit-info.yaml';
+    protected string $schema = 'schema://requests/tobeset.yaml';
+    protected string $crud_slug_attribute = 'crud_slug';
+    protected string $crud_slug = 'to_be_set';
 
+    protected string $crud_action = 'to_be_set';
     /**
      * Inject dependencies.
      */
@@ -73,6 +77,11 @@ class BaseEditAction
      */
     public function __invoke(CRUD5ModelInterface $crudModel, Request $request, Response $response): Response
     {
+        $this->crud_slug = $this->getParameter($request, $this->crud_slug_attribute);
+        $this->crud_action = $this->getParameter($request, 'crud_action');
+        $file = $this->crud_action == 'create' ? '/create.yaml' : '/edit-info.yaml';
+        $this->schema = 'schema://requests/' . $this->crud_slug . $file;
+
         $this->handle($crudModel, $request);
         $payload = json_encode([], JSON_THROW_ON_ERROR);
         $response->getBody()->write($payload);
@@ -92,26 +101,32 @@ class BaseEditAction
         $params = (array) $request->getParsedBody();
 
         // Load the request schema
+        //$this->crud_slug = $this->getParameter($request, $this->crud_slug_attribute);
+        //$this->crud_action = $this->getParameter($request, 'crud_action');
+        //$file = $this->crud_action == 'create' ? '/create.yaml' : '/edit-info.yaml';
+        //$this->schema = 'schema://requests/' . $this->crud_slug . $file;
         $schema = $this->getSchema();
 
         // Whitelist and set parameter defaults
         $data = $this->transformer->transform($schema, $params);
+        $data = $this->setDefaults($data);
         $this->debugLogger->debug("Line 92 - CRUD5EditAction:", $data);
 
         // Validate request data
         $this->validateData($schema, $data);
+        /*
         if ($data['name'] !== $crudModel->name) {
             $this->validateGroupName($data['name']);
         }
         if ($data['slug'] !== $crudModel->slug) {
             $this->validateGroupSlug($data['slug']);
         }
-
+*/
         // Determine targeted fields
-        $fieldNames = [];
-        foreach ($data as $name => $value) {
-            $fieldNames[] = $name;
-        }
+        $fieldNames = array_keys($data);
+        //foreach ($data as $name => $value) {
+        //    $fieldNames[] = $name;
+        //}
 
         // Access-controlled resource - check that currentUser has permission to edit submitted fields for this user
         if (!$this->authenticator->checkAccess('update_group_field', [
@@ -164,6 +179,7 @@ class BaseEditAction
      * @param RequestSchemaInterface $schema
      * @param mixed[]                $data
      */
+
     protected function validateData(RequestSchemaInterface $schema, array $data): void
     {
         $errors = $this->validator->validate($schema, $data);
@@ -176,10 +192,45 @@ class BaseEditAction
     }
 
     /**
+     * Get the value of a parameter from the request.
+     *
+     * @param Request $request
+     * @param string  $key
+     *
+     * @return string|null
+     */
+
+    protected function getParameter(Request $request, string $key): ?string
+    {
+        $routeContext = RouteContext::fromRequest($request);
+        $route = $routeContext->getRoute();
+        return $route?->getArgument($key) ?? $request->getQueryParams()[$key] ?? null;
+    }
+
+    /**
+     * Set default values for the request data.
+     *
+     * @param mixed[] $data
+     *
+     * @return mixed[]
+     */
+    protected function setDefaults($data)
+    {
+        $currentUser = $this->authenticator->user();
+        $data['updated_by'] =   $currentUser->id;
+        if (!is_array($data['meta'])) {
+            $data['meta'] = json_decode($data['meta'], true);
+        }
+        return $data;
+    }
+
+
+    /*
+    /**
      * Validate group name is not already in use.
      *
      * @param string $name
-     */
+     * /
     protected function validateGroupName(string $name): void
     {
         $group = $this->crudModel->where('name', $name)->first();
@@ -196,7 +247,7 @@ class BaseEditAction
      * Validate group name is not already in use.
      *
      * @param string $slug
-     */
+     * /
     protected function validateGroupSlug(string $slug): void
     {
         $group = $this->crudModel->where('slug', $slug)->first();
@@ -208,4 +259,5 @@ class BaseEditAction
             throw $e;
         }
     }
+    */
 }
