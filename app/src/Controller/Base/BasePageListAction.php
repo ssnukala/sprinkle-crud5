@@ -39,6 +39,7 @@ class BasePageListAction
     protected string $template = 'pages/tobeset.html.twig';
     protected array $config;
     protected string $configFile = '';
+    protected string $user_permission = 'tobeset';
 
     /**
      * Inject dependencies.
@@ -60,6 +61,8 @@ class BasePageListAction
         $this->configFile = $configFile ?? "schema://crud5/$slug.yaml";
         $loader = new YamlFileLoader($this->configFile);
         $this->config = $loader->load(false);
+        $this->user_permission = $this->config['permission'];
+        //$this->debugLogger->debug("Line 65: CRUD5 Sprunje: $slug - Configuration ", $this->config);
     }
 
     protected function getSortable(): array
@@ -96,13 +99,12 @@ class BasePageListAction
      */
     public function __invoke(Request $request, Response $response): Response
     {
-        $this->validateAccess();
-
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
         $slug = $route?->getArgument('crud_slug');
         //error_log("Line 66: BasePageListAction: " . $slug);
         $this->loadConfig($slug);
+        $this->validateAccess();
         /**
          * Loads the config into the class property.
          *
@@ -122,13 +124,14 @@ class BasePageListAction
      */
     public function sprunje(Request $request, Response $response): Response
     {
-        $this->validateAccess();
 
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
         $slug = $route?->getArgument('crud_slug');
         $this->loadConfig($slug);
-        //$this->debugLogger->debug("Line 127: CRUD5 Sprunje: $slug - Configuration ", $this->config);
+
+        $this->debugLogger->debug("Line 127: CRUD5 Sprunje: $slug - Configuration ", $this->config);
+        $this->validateAccess();
         // GET parameters and pass to Sprunje
         $params = $request->getQueryParams();
         $sortable = $this->getSortable();
@@ -149,7 +152,9 @@ class BasePageListAction
      */
     protected function validateAccess(): void
     {
-        if (!$this->authenticator->checkAccess('uri_groups')) {
+        $this->debugLogger->debug("Line 155: checking access for :  " . $this->user_permission);
+
+        if (!$this->authenticator->checkAccess($this->user_permission)) {
             throw new ForbiddenException();
         }
     }

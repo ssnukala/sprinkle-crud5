@@ -12,27 +12,46 @@
 {% import 'macros/crudlist-default.twig' as defaultmacro %}
 
 {% block table %}
-    <table id="{{table.id}}" class="tablesorter table table-bordered table-hover table-striped" data-sortlist="{{table.sortlist}}">
-        <thead>
-            <tr>
-            {% for name, column in table.columns %}
-                <th class="sorter-metatext" data-column-name="{{name}}" 
-                {#% if column.template is not empty % #}
-                    data-column-template="#crudlist-table-column-{{name}}" 
-                {#% endif %#}
-                
-                data-filter="{{column.filter|default(false)?'true':'false'}}"
-                     data-priority="{{loop.index}}">{{translate(column.label)}}
-                     {% if column.filter %}
-                        <i class="fas fa-sort"></i>
-                    {% endif %}
-                </th>
-            {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table id="{{table.id}}" class="tablesorter table table-bordered table-hover table-striped" data-sortlist="{{table.sortlist}}"
+            data-table="{{table.schema}}">
+            <thead>
+                <tr>
+                {% for name, column in table.columns %}
+                    <th class="sorter-metatext" data-column-name="{{name}}" 
+                    {#% if column.template is not empty % #}
+                        data-column-template="#crudlist-table-column-{{name}}" 
+                    {#% endif %#}
+                    
+                    data-filter="{{column.filter|default(false)?'true':'false'}}"
+                        data-priority="{{loop.index}}">{{translate(column.label)}}
+                        {% if column.filter %}
+                            <i class="fas fa-sort"></i>
+                        {% endif %}
+                    </th>
+                {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <div class="chat-box">
+            <label for="chat-input" class="form-label"
+                ><strong>
+                    Type or paste multiple lines of data here e.g. #contact John Smith, john.smith@example.com, 123-456-7890, Lawyer, 9 Jason Bank, jb@example.com,
+                    555-123-4567, Developer, 10 Jane Doe, janed@example.com, 555-987-6543, Manager, 8 Taylor Swift, tswift@example.com, 555-321-7654, Singer, 9 #meeting
+                    Jason Bank, 2022-12-31, 555-123-4567, jb@jb.com
+                </strong></label
+            >
+            <textarea
+                id="chat-input"
+                rows="5"
+                class="form-control"
+                placeholder="Type #contact or #meeting followed by details...Type or paste multiple lines of data here (e.g., John Smith, john.smith@example.com, 123-456-7890, Lawyer, 9)..."
+            ></textarea>
+            <button id="chat-submit" class="btn btn-primary w-100">Submit</button>
+        </div>
+    </div>
 {% endblock %}
 
 {% block table_cell_templates %}

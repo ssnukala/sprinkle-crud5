@@ -29,6 +29,7 @@ use UserFrosting\Sprinkle\CRUD5\Database\Models\Interfaces\CRUD5ModelInterface;
 use Slim\Routing\RouteContext;
 use UserFrosting\Sprinkle\FormGenerator\Form;
 use UserFrosting\Support\Exception\FileNotFoundException;
+use UserFrosting\Support\Repository\Loader\YamlFileLoader;
 
 /**
  * Renders the modal form for editing an existing group.
@@ -55,6 +56,9 @@ class BaseEditModal
     protected string $box_id = 'box-generic-id';
 
     protected string $query_field = 'id';
+    protected array $config;
+    protected string $configFile = '';
+    protected string $user_permission = 'tobeset';
 
 
     /**
@@ -86,6 +90,7 @@ class BaseEditModal
         $this->crud_action = $this->getParameter($request, 'crud_action');
         $this->box_id = $this->getParameter($request, 'box_id');
         //$this->crud_action = 'create';
+        $this->loadConfig($this->crud_slug);
 
         $file = $this->crud_action == 'create' ? '/create.yaml' : '/edit-info.yaml';
         $this->schema = 'schema://requests/' . $this->crud_slug . $file;
@@ -118,10 +123,7 @@ class BaseEditModal
         // Access-controlled resource - check that currentUser has permission
         // to edit basic fields "name", "slug", "icon", "description" for this group
         $field_names = array_keys($form_fields);
-        if (!$this->authenticator->checkAccess('update_group_field', [
-            'group'  => $crudModel,
-            'fields' => $field_names,
-        ])) {
+        if (!$this->authenticator->checkAccess($this->user_permission)) {
             throw new ForbiddenException();
         }
 
@@ -159,5 +161,14 @@ class BaseEditModal
         $routeContext = RouteContext::fromRequest($request);
         $route = $routeContext->getRoute();
         return $route?->getArgument($key) ?? $request->getQueryParams()[$key] ?? null;
+    }
+
+    protected function loadConfig($slug): void
+    {
+        $this->configFile = $configFile ?? "schema://crud5/$slug.yaml";
+        $loader = new YamlFileLoader($this->configFile);
+        $this->config = $loader->load(false);
+        $this->user_permission = $this->config['permission'];
+        //$this->debugLogger->debug("Line 65: CRUD5 Sprunje: $slug - Configuration ", $this->config);
     }
 }

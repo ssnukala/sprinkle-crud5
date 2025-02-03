@@ -27,7 +27,7 @@
                         }
                     %}
                 </div>
-                {% if checkAccess('create_group') %}
+                {% if checkAccess(crud5.permission) %}
                 <div id="widget-create-{{crud5.model}}" class="box-footer">
                     <button type="button" class="btn btn-success js-crud5-create1 js-displayForm" data-target='crudlist-create-form' data-toggle="modal" data-formUrl="/modals/crud5/{{crud5.model}}/create">
                         <i class="fas fa-plus-square"></i>  {{translate("CRUD.CREATE")}}
