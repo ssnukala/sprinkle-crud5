@@ -5,6 +5,12 @@
     {% else %}
     <div class="form-group">
     {% endif %}
-        <input{% for type,value in input %} {{type}}="{{value}}"{% endfor %}></input>
+        <input{% for type,value in input %} 
+            {% if type == 'placeholder' %}
+                placeholder="{{translate(value)}}"
+            {% else %}
+                {{type}}="{{value}}"
+            {% endif %}
+        {% endfor %}></input>
     </div>
 {% endmacro %}

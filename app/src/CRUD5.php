@@ -20,12 +20,17 @@ use UserFrosting\Sprinkle\SprinkleRecipe;
 use UserFrosting\Sprinkle\CRUD5\Routes\CRUD5Routes;
 use UserFrosting\Sprinkle\CRUD5\Routes\DashboardRoutes;
 use UserFrosting\Sprinkle\CRUD5\ServicesProvider\CRUD5ModelsService;
-
+use UserFrosting\Sprinkle\CRUD5\Database\Seeds\CRUD5Permissions;
 use UserFrosting\Theme\AdminLTE\AdminLTE;
+use UserFrosting\Sprinkle\Core\Sprinkle\Recipe\SeedRecipe;
+use UserFrosting\Sprinkle\Core\Sprinkle\Recipe\MigrationRecipe;
+use UserFrosting\Sprinkle\CRUD5\Database\Migrations\v501\CRUD5PermissionsTable;
 
 class CRUD5 implements
     SprinkleRecipe,
-    EventListenerRecipe
+    EventListenerRecipe,
+    MigrationRecipe,
+    SeedRecipe
 {
     /**
      * {@inheritdoc}
@@ -73,6 +78,26 @@ class CRUD5 implements
     {
         return [
             CRUD5ModelsService::class,
+        ];
+    }
+
+    public function getMigrations(): array
+    {
+        return [
+            // v501
+            CRUD5PermissionsTable::class,
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @codeCoverageIgnore
+     */
+    public function getSeeds(): array
+    {
+        return [
+            //CRUD5Permissions::class,
         ];
     }
 

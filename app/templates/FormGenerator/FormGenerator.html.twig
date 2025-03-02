@@ -11,6 +11,9 @@
 {% set fieldno = 0 %}
 {% set lastclass = 12 %}
 {% for name, input in fields %}
+  {% if input.default == 'CURRENT_USER_ID'%}
+      {% set input = input|merge ({'value': current_user_id}) %}
+  {% endif %}
   {% if input.type == "hidden" %}
     {{ hidden.generate(input) }}
   {% elseif input.type == "alert" %}

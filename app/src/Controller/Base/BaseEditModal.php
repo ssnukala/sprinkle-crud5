@@ -101,7 +101,7 @@ class BaseEditModal
             $this->action .= "/r/" . $crudModel->$field;
         }
         $payload = $this->handle($crudModel);
-        $this->debugLogger->debug("Line 70 - BaseEditModal: Payload ", $payload);
+        //$this->debugLogger->debug("Line 70 - BaseEditModal: Payload ", $payload);
         //return $this->view->render($response, $this->template, $payload);
 
         return $this->view->render($response, "FormGenerator/modal.html.twig", $payload);
@@ -127,14 +127,19 @@ class BaseEditModal
             throw new ForbiddenException();
         }
 
+        $title = $this->translator->translate(strtoupper($this->crud_slug) . ($this->crud_action === 'create' ? '.CREATE' : '.UPDATE'));
+        $currentUser = $this->authenticator->user();
+
+
         return [
             "box_id"        => $this->box_id,
-            "box_title"     => strtoupper($this->crud_slug) . ".UPDATE",
+            "box_title"     => $title,
             "submit_button" => "SAVE",
             'form_action'      => $this->action,
             'form_method' => $this->crud_action === 'create' ? 'POST' : 'PUT',
             "fields"        => $form_fields,
-            "validators"    => $this->adapter->rules($schema)
+            "validators"    => $this->adapter->rules($schema),
+            "current_user_id" => $currentUser->id
         ];
     }
 

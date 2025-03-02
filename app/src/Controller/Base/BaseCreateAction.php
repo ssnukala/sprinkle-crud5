@@ -171,7 +171,8 @@ class BaseCreateAction
      */
     protected function validateAccess(): void
     {
-        if (!$this->authenticator->checkAccess('create_crud5_base')) {
+        $this->debugLogger->debug("Line 174 checking access");
+        if (!$this->authenticator->checkAccess('c5_user')) {
             throw new ForbiddenException();
         }
     }
