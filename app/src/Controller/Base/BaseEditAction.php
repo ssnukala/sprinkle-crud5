@@ -128,6 +128,8 @@ class BaseEditAction
         //    $fieldNames[] = $name;
         //}
 
+        // SN TODO : Change this to use CRUD5 permission instead of the Group model
+
         // Access-controlled resource - check that currentUser has permission to edit submitted fields for this user
         if (!$this->authenticator->checkAccess('update_group_field', [
             'group'  => $crudModel,

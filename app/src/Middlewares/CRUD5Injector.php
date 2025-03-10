@@ -18,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Slim\Psr7\JsonResponse;
 
 /**
  * Route middleware to inject group when its slug is passed via placeholder in the URL or request query.
@@ -50,7 +51,43 @@ class CRUD5Injector extends AbstractInjector
         return $record;
     }
 
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $crud_slug = $this->getParameter($request, $this->crud_slug);
+        $id = $this->getParameter($request, $this->placeholder);
+
+        if (!$this->validateSlug($crud_slug)) {
+            throw new CRUD5Exception("Invalid CRUD slug: '{$crud_slug}'.");
+        }
+
+        // Clone the model to prevent modifying a shared instance
+        $this->crudModel->setTable($crud_slug);
+        //$modelInstance = clone $this->crudModel;
+        //$modelInstance->setTable($crud_slug);
+
+        $this->debugLogger->debug("CRUD5Injector: Table set to '{$crud_slug}'.");
+
+        // ⚡ Return early if model injection is all that's needed
+        if ($this->shouldInjectOnly($request)) {
+            $this->debugLogger->debug('Model injected successfully');
+            $modelInstance = clone $this->crudModel;
+            $modelInstance->setTable($crud_slug);
+            $request = $request->withAttribute($this->attribute, $modelInstance);
+            return $handler->handle($request);
+        } else {
+            try {
+                $instance = $this->getInstance($id);
+                $request = $request->withAttribute($this->attribute, $instance);
+            } catch (CRUD5NotFoundException $e) {
+                $this->debugLogger->error("CRUD5Injector: Record not found with ID '{$id}' in table '{$crud_slug}'.");
+            }
+
+            return $handler->handle($request);
+        }
+    }
+
+    public function processOLD(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $crud_slug = $this->getParameter($request, $this->crud_slug);
         $id = $this->getParameter($request, $this->placeholder);
@@ -83,5 +120,12 @@ class CRUD5Injector extends AbstractInjector
     protected function validateSlug(string $slug): bool
     {
         return preg_match('/^[a-zA-Z0-9_]+$/', $slug) === 1;
+    }
+
+    protected function shouldInjectOnly(ServerRequestInterface $request): bool
+    {
+        $injectonly  = $this->getParameter($request, 'inject_only');
+        $this->debugLogger->debug("Line 121 : CRUD5Injector: Inject only: " . $injectonly);
+        return $injectonly ? true : false;
     }
 }
