@@ -1,0 +1,47 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build artifacts
+/public/assets/
+/app/assets/dist/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+/app/logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Testing
+/coverage/
+.phpunit.result.cache
+
+# Cache
+/app/cache/
+/app/sessions/
+
+# Composer
+composer.lock
+
+# npm
+package-lock.json
+npm-debug.log
+yarn-error.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
